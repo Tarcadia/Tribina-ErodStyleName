@@ -125,7 +125,7 @@ public enum Skin {
                 lastUpdate.put(player.getName(), System.currentTimeMillis());
                 textures.put(player.getName(), tx);
             } catch (Exception e) {
-                tx = null;
+                StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
             }
         }
     }
