@@ -66,8 +66,11 @@ public class PlayerPacketWrap {
     public Player getEIDPlayer(int eid) {
         if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
             var player = eidPlayer.get(eid);
-            if (player.getEntityId() == eid) {
+            if (player.getEntityId() == eid && player.isOnline()) {
                 return player;
+            } else if (player.getEntityId() == eid && !player.isOnline()) {
+                eidPlayer.remove(eid);
+                return null;
             } else {
                 return null;
             }
