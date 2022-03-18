@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -374,8 +375,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        Skin.updateSkin(player);
+        Skin.loadOwnSkin(player);
         ppw.updateEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+        var player = event.getPlayer();
+        Skin.unloadOwnSkin(player);
     }
 
     @Override
