@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,6 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinValue(@NotNull Player player) {
-            updateSkin(player);
             var tx = textures.get(player.getName());
             if (tx != null) {
                 try {
@@ -44,7 +42,6 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinSignature(@NotNull Player player) {
-            updateSkin(player);
             var tx = textures.get(player.getName());
             if (tx != null) {
                 try {
@@ -97,37 +94,34 @@ public enum Skin {
     ;
 
     private static final Map<String, JsonObject> textures = new HashMap<>();
-    private static final Map<String, Long> lastUpdate = new HashMap<>();
-    private static final long TTL = 60000;
 
-    synchronized public static void updateSkin(@NotNull Player player) {
-        lastUpdate.putIfAbsent(player.getName(), 0L);
-        var lu = lastUpdate.get(player.getName());
-        var tx = textures.get(player.getName());
-        if (lu + TTL < System.currentTimeMillis() || tx == null) {
-            String uuid = null;
-            try{
-                var url = new URL("https://api.mojang.com/users/profiles/minecraft/" + player.getName());
-                var https = (HttpsURLConnection) url.openConnection();
-                https.setRequestProperty("Accept", "application/json");
-                var message = https.getResponseMessage();
-                uuid = new JsonObject().getAsJsonObject(message).get("id").getAsString();
-            } catch (Exception e) {
-                StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
-            }
-
-            if (uuid != null) try {
-                var url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
-                var https = (HttpsURLConnection) url.openConnection();
-                https.setRequestProperty("Accept", "application/json");
-                var message = https.getResponseMessage();
-                tx = new JsonObject().getAsJsonObject(message).getAsJsonArray("properties").get(0).getAsJsonObject();
-                lastUpdate.put(player.getName(), System.currentTimeMillis());
-                textures.put(player.getName(), tx);
-            } catch (Exception e) {
-                StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
-            }
+    synchronized public static void loadOwnSkin(@NotNull Player player) {
+        String uuid = null;
+        JsonObject tx = null;
+        try{
+            var url = new URL("https://api.mojang.com/users/profiles/minecraft/" + player.getName());
+            var https = (HttpsURLConnection) url.openConnection();
+            https.setRequestProperty("Accept", "application/json");
+            var message = https.getResponseMessage();
+            uuid = new JsonObject().getAsJsonObject(message).get("id").getAsString();
+        } catch (Exception e) {
+            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
         }
+
+        if (uuid != null) try {
+            var url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
+            var https = (HttpsURLConnection) url.openConnection();
+            https.setRequestProperty("Accept", "application/json");
+            var message = https.getResponseMessage();
+            tx = new JsonObject().getAsJsonObject(message).getAsJsonArray("properties").get(0).getAsJsonObject();
+            textures.put(player.getName(), tx);
+        } catch (Exception e) {
+            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
+        }
+    }
+
+    synchronized public static void unloadOwnSkin(@NotNull Player player) {
+        textures.remove(player.getName());
     }
 
     @NotNull
