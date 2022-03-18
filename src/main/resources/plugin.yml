@@ -1,0 +1,26 @@
+name: ErodStyleName
+version: '${project.version}'
+main: net.tarcadia.tribina.erod.stylename.StyleName
+api-version: 1.18
+prefix: EROD SN
+load: STARTUP
+authors: [ Tarcadia ]
+description: '${project.description}'
+depend: [ ProtocolLib ]
+commands:
+  erodstylename:
+    aliases: [ erodsn, stylename ]
+    description: "Manage players' tags and custom names."
+    usage: |
+      ... enable
+      ... disable
+      ... list <player>
+      ... set-name <player> <name>
+      ... add-skin <player> <skin>
+      ... set-skin <player> <skin>
+      ... add-tag <player> <tag>
+      ... set-tag <player> <tag>
+      ... set-tag-visible <player>
+      ... set-tag-invisible <player>
+      ... add-style <player> <style>
+      ... set-style <player> <style>

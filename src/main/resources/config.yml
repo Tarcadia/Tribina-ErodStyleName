@@ -1,0 +1,24 @@
+enable: true
+players:
+texts:
+  function-enable: Erod StyleName enabled.
+  function-disable: Erod StyleName enabled.
+  function-fail: You cannot set enability. It may because you are not an op.
+  list-fail: You cannot get the player's tags and styles list. It may because you are not an op, or the player does not exist.
+  set-name: Player $player$'s custom name set to $name$.
+  set-name-fail: You cannot set the player's name. It may because you are not an op, or the player does not exist, or the name contains illegal characters.
+  add-skin: Player $player$ added skin $skin$.
+  add-skin-fail: You cannot add the player's skin. It may because you are not an op.
+  set-skin: Player $player$ setted skin $skin$. Please relogin to view the change.
+  set-skin-fail: You cannot set the player's skin. It may because you are not an op, or the player does not exist, or the player does not have this tag.
+  add-tag: Player $player$ added tag $tag$.
+  add-tag-fail: You cannot add the player's tag. It may because you are not an op.
+  set-tag: Player $player$ setted tag $tag$.
+  set-tag-fail: You cannot set the player's tag. It may because you are not an op, or the player does not exist, or the player does not have this tag.
+  set-tag-visible: Player $player$'s tag is visible now.
+  set-tag-invisible: Player $player$'s tag is invisible now.
+  add-tag-visibility-fail: You cannot set the player's tag's visibility. It may because you are not an op.
+  add-style: Player $player$ added style $style$.
+  add-style-fail: You cannot add the player's tag. It may because you are not an op.
+  set-style: Player $player$ setted style $style$.
+  set-style-fail: You cannot set the player's style. It may because you are not an op, or the player does not exist, or the player does not have this style.
