@@ -81,7 +81,7 @@ public class PlayerPacketWrap {
     public static void hideAllFollower(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
-        for (var p : player.getWorld().getPlayers()) {
+        for (var p : player.getWorld().getPlayers()) if(p != player) {
             try {
                 var packetDestroy = wrapFollowerDestroy(p);
                 pm.sendServerPacket(player, packetDestroy);
