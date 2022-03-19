@@ -9,6 +9,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,19 +59,20 @@ public class PlayerPacketWrap {
         }
     }
 
-    public void updateEIDPlayer(@NotNull Player player) {
+    public void loadEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
+    }
+
+    public void unloadEIDPlayer(@NotNull Player player) {
+        eidPlayer.remove(player.getEntityId());
     }
 
     @Nullable
     public Player getEIDPlayer(int eid) {
         if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
             var player = eidPlayer.get(eid);
-            if (player.getEntityId() == eid && player.isOnline()) {
+            if (player.getEntityId() == eid) {
                 return player;
-            } else if (player.getEntityId() == eid && !player.isOnline()) {
-                eidPlayer.remove(eid);
-                return null;
             } else {
                 return null;
             }
@@ -84,12 +86,18 @@ public class PlayerPacketWrap {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
+        double offset = 2.2;
+        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
+        if (player.isSneaking()) offset -= 0.4;
+        else if (player.isGliding() || player.isSwimming()) offset -= 1.0;
+        else if (player.isSleeping()) offset -= 1.6;
+
         packetSpawn.getModifier().writeDefaults();
         packetSpawn.getIntegers().write(0, eid);
         packetSpawn.getUUIDs().write(0, uuid);
         packetSpawn.getIntegers().write(1, 1);
         packetSpawn.getDoubles().write(0, player.getLocation().getX());
-        packetSpawn.getDoubles().write(1, player.getLocation().getY() + 2.4);
+        packetSpawn.getDoubles().write(1, player.getLocation().getY() + offset);
         packetSpawn.getDoubles().write(2, player.getLocation().getZ());
 
         return packetSpawn;
@@ -134,12 +142,17 @@ public class PlayerPacketWrap {
     public PacketContainer wrapFollowerMove(@NotNull Player player) {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
+        double offset = 2.2;
+        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
+        if (player.isSneaking()) offset -= 0.4;
+        else if (player.isGliding() || player.isSwimming()) offset -= 1.0;
+        else if (player.isSleeping()) offset -= 1.6;
 
         var packetMove = pm.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
         packetMove.getModifier().writeDefaults();
         packetMove.getIntegers().write(0, eid);
         packetMove.getDoubles().write(0, player.getLocation().getX());
-        packetMove.getDoubles().write(1, player.getLocation().getY() + 2.4);
+        packetMove.getDoubles().write(1, player.getLocation().getY() + offset);
         packetMove.getDoubles().write(2, player.getLocation().getZ());
 
         return packetMove;
@@ -173,7 +186,7 @@ public class PlayerPacketWrap {
                                 ((player = sn.getServer().getPlayer(profile.getUUID())) != null) &&
                                 player.isOnline()
                         ) {
-                            var name = sn.getPlayerStringName(player);
+                            var name = sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
                             var nWGP = profile.withName(name);
                             nWGP.getProperties().removeAll("textures");
                             nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
@@ -204,8 +217,7 @@ public class PlayerPacketWrap {
                         var eid = packet.getIntegers().read(0);
                         var uuid = packet.getUUIDs().read(0);
                         var player = sn.getServer().getPlayer(uuid);
-                        if (player != null) {
-                            updateEIDPlayer(player);
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetSpawn = wrapFollowerSpawn(player);
                             var packetMeta = wrapFollowerMeta(player);
                             try {
@@ -221,7 +233,6 @@ public class PlayerPacketWrap {
                         for (var eid : eidList) {
                             var player = getEIDPlayer(eid);
                             if (player != null) {
-                                sn.getLogger().info("ENTITY DESTROY: " + player.getName());
                                 var packetDestroy = wrapFollowerDestroy(player);
                                 try {
                                     var target = event.getPlayer();
@@ -234,7 +245,7 @@ public class PlayerPacketWrap {
                     } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                         var eid = packet.getIntegers().read(0);
                         var player = getEIDPlayer(eid);
-                        if (player != null) {
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetMeta = wrapFollowerMeta(player);
                             try {
                                 var target = event.getPlayer();
@@ -250,7 +261,7 @@ public class PlayerPacketWrap {
                     ) {
                         var eid = packet.getIntegers().read(0);
                         var player = getEIDPlayer(eid);
-                        if (player != null) {
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetMove = wrapFollowerMove(player);
                             try {
                                 var target = event.getPlayer();
