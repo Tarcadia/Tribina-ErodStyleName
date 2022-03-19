@@ -18,17 +18,14 @@ import java.util.*;
 
 public class PlayerPacketWrap {
 
-    private final ProtocolManager pm;
-    private final StyleName sn;
-    private final Map<Integer, Player> eidPlayer = new HashMap<>();
-    private final Map<Integer, Player> eidFollower = new HashMap<>();
-    private final Map<String, Integer> followerEID = new HashMap<>();
-    private final Map<String, UUID> followerUUID = new HashMap<>();
+    private static final Map<Integer, Player> eidPlayer = new HashMap<>();
+    private static final Map<Integer, Player> eidFollower = new HashMap<>();
+    private static final Map<String, Integer> followerEID = new HashMap<>();
+    private static final Map<String, UUID> followerUUID = new HashMap<>();
 
-    public final PacketAdapter playerInfoListener;
-    public final PacketAdapter playerMoveListener;
+    private PlayerPacketWrap() {}
 
-    public int getFollowerEID(@NotNull Player player) {
+    public static int getFollowerEID(@NotNull Player player) {
         if (!followerEID.containsKey(player.getName()) || followerEID.get(player.getName()) == null) {
             var eid = new Random().nextInt(Integer.MAX_VALUE);
             followerEID.put(player.getName(), eid);
@@ -40,7 +37,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public UUID getFollowerUUID(@NotNull Player player) {
+    public static UUID getFollowerUUID(@NotNull Player player) {
         if (!followerUUID.containsKey(player.getName()) || followerUUID.get(player.getName()) == null) {
             var uuid = UUID.randomUUID();
             followerUUID.put(player.getName(), uuid);
@@ -51,7 +48,7 @@ public class PlayerPacketWrap {
     }
 
     @Nullable
-    public Player getEIDFollower(int eid) {
+    public static Player getEIDFollower(int eid) {
         if (eidFollower.containsKey(eid) && eidFollower.get(eid) != null) {
             return eidFollower.get(eid);
         } else {
@@ -59,16 +56,16 @@ public class PlayerPacketWrap {
         }
     }
 
-    public void loadEIDPlayer(@NotNull Player player) {
+    public static void loadEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
     }
 
-    public void unloadEIDPlayer(@NotNull Player player) {
+    public static void unloadEIDPlayer(@NotNull Player player) {
         eidPlayer.remove(player.getEntityId());
     }
 
     @Nullable
-    public Player getEIDPlayer(int eid) {
+    public static Player getEIDPlayer(int eid) {
         if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
             var player = eidPlayer.get(eid);
             if (player.getEntityId() == eid) {
@@ -82,7 +79,9 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public PacketContainer wrapFollowerSpawn(@NotNull Player player) {
+    public static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
@@ -104,7 +103,9 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public PacketContainer wrapFollowerMeta(@NotNull Player player) {
+    public static PacketContainer wrapFollowerMeta(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
         var metadata = new WrappedDataWatcher();
         var displayName = sn.getPlayerDisplayFullName(player);
         var displayNameVisible = !player.isSneaking() && sn.isFunctionEnabled();
@@ -127,7 +128,9 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public PacketContainer wrapFollowerDestroy(@NotNull Player player) {
+    public static PacketContainer wrapFollowerDestroy(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
 
@@ -139,7 +142,9 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public PacketContainer wrapFollowerMove(@NotNull Player player) {
+    public static PacketContainer wrapFollowerMove(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         double offset = 2.2;
@@ -158,125 +163,135 @@ public class PlayerPacketWrap {
         return packetMove;
     }
 
-    public PlayerPacketWrap() {
-        pm = ProtocolLibrary.getProtocolManager();
-        sn = StyleName.plugin;
+    public static final class InfoPacketAdapter extends PacketAdapter {
 
-        playerInfoListener = new PacketAdapter(
-                sn,
-                ListenerPriority.NORMAL,
-                PacketType.Play.Server.PLAYER_INFO
-        ) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer packet;
-                if (
-                        sn.isFunctionEnabled() &&
-                        ((packet = event.getPacket()) != null) &&
-                        (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
-                        (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
-                ) {
-                    var nPIDList = new LinkedList<PlayerInfoData>();
-                    for (var rPID : packet.getPlayerInfoDataLists().read(0)) {
-                        Player player;
-                        WrappedGameProfile profile;
-                        if (
-                                (rPID != null) &&
-                                ((profile = rPID.getProfile()) != null) &&
-                                ((player = sn.getServer().getPlayer(profile.getUUID())) != null) &&
-                                player.isOnline()
-                        ) {
-                            var name = sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
-                            var nWGP = profile.withName(name);
-                            nWGP.getProperties().removeAll("textures");
-                            nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
-                            nPIDList.add(new PlayerInfoData(nWGP, rPID.getLatency(), rPID.getGameMode(), rPID.getDisplayName()));
-                        }
-                    }
-                    packet.getPlayerInfoDataLists().write(0, nPIDList);
-                }
-            }
-        };
+        private final StyleName sn;
 
+        public InfoPacketAdapter() {
+            super(
+                    StyleName.plugin,
+                    ListenerPriority.NORMAL,
+                    PacketType.Play.Server.PLAYER_INFO
+            );
+            sn = StyleName.plugin;
+        }
 
-        playerMoveListener = new PacketAdapter(
-                sn,
-                ListenerPriority.NORMAL,
-                PacketType.Play.Server.NAMED_ENTITY_SPAWN,
-                PacketType.Play.Server.ENTITY_DESTROY,
-                PacketType.Play.Server.ENTITY_METADATA,
-                PacketType.Play.Server.REL_ENTITY_MOVE,
-                PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
-                PacketType.Play.Server.ENTITY_TELEPORT
-        ) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer packet;
-                if ((packet = event.getPacket()) != null) {
-                    if (packet.getType().equals(PacketType.Play.Server.NAMED_ENTITY_SPAWN)) {
-                        var eid = packet.getIntegers().read(0);
-                        var uuid = packet.getUUIDs().read(0);
-                        var player = sn.getServer().getPlayer(uuid);
-                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
-                            var packetSpawn = wrapFollowerSpawn(player);
-                            var packetMeta = wrapFollowerMeta(player);
-                            try {
-                                var target = event.getPlayer();
-                                pm.sendServerPacket(target, packetSpawn);
-                                pm.sendServerPacket(target, packetMeta);
-                            } catch (Exception e) {
-                                StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
-                            }
-                        }
-                    } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
-                        var eidList = packet.getIntLists().read(0);
-                        for (var eid : eidList) {
-                            var player = getEIDPlayer(eid);
-                            if (player != null) {
-                                var packetDestroy = wrapFollowerDestroy(player);
-                                try {
-                                    var target = event.getPlayer();
-                                    pm.sendServerPacket(target, packetDestroy);
-                                } catch (Exception e) {
-                                    StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
-                                }
-                            }
-                        }
-                    } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
-                        var eid = packet.getIntegers().read(0);
-                        var player = getEIDPlayer(eid);
-                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
-                            var packetMeta = wrapFollowerMeta(player);
-                            try {
-                                var target = event.getPlayer();
-                                pm.sendServerPacket(target, packetMeta);
-                            } catch (Exception e) {
-                                StyleName.logger.warning("Unable to wrap the player follower meta packet.");
-                            }
-                        }
-                    } else if (
-                            packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
-                            packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
-                            packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
+        @Override
+        public void onPacketSending(PacketEvent event) {
+            PacketContainer packet;
+            if (
+                    this.sn.isFunctionEnabled() &&
+                            ((packet = event.getPacket()) != null) &&
+                            (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
+                            (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
+            ) {
+                var nPIDList = new LinkedList<PlayerInfoData>();
+                for (var rPID : packet.getPlayerInfoDataLists().read(0)) {
+                    Player player;
+                    WrappedGameProfile profile;
+                    if (
+                            (rPID != null) &&
+                                    ((profile = rPID.getProfile()) != null) &&
+                                    ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
+                                    player.isOnline()
                     ) {
-                        var eid = packet.getIntegers().read(0);
-                        var player = getEIDPlayer(eid);
-                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
-                            var packetMove = wrapFollowerMove(player);
+                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
+                        var nWGP = profile.withName(name);
+                        nWGP.getProperties().removeAll("textures");
+                        nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
+                        nPIDList.add(new PlayerInfoData(nWGP, rPID.getLatency(), rPID.getGameMode(), rPID.getDisplayName()));
+                    }
+                }
+                packet.getPlayerInfoDataLists().write(0, nPIDList);
+            }
+        }
+    }
+
+    public static final class MovePacketAdapter extends PacketAdapter {
+
+        private final StyleName sn;
+        private final ProtocolManager pm;
+
+        public MovePacketAdapter() {
+            super(
+                    StyleName.plugin,
+                    ListenerPriority.NORMAL,
+                    PacketType.Play.Server.NAMED_ENTITY_SPAWN,
+                    PacketType.Play.Server.ENTITY_DESTROY,
+                    PacketType.Play.Server.ENTITY_METADATA,
+                    PacketType.Play.Server.REL_ENTITY_MOVE,
+                    PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
+                    PacketType.Play.Server.ENTITY_TELEPORT
+            );
+            sn = StyleName.plugin;
+            pm = ProtocolLibrary.getProtocolManager();
+        }
+
+        @Override
+        public void onPacketSending(PacketEvent event) {
+            PacketContainer packet;
+            if ((packet = event.getPacket()) != null) {
+                if (packet.getType().equals(PacketType.Play.Server.NAMED_ENTITY_SPAWN)) {
+                    var eid = packet.getIntegers().read(0);
+                    var uuid = packet.getUUIDs().read(0);
+                    var player = sn.getServer().getPlayer(uuid);
+                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                        var packetSpawn = PlayerPacketWrap.wrapFollowerSpawn(player);
+                        var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
+                        try {
+                            var target = event.getPlayer();
+                            pm.sendServerPacket(target, packetSpawn);
+                            pm.sendServerPacket(target, packetMeta);
+                        } catch (Exception e) {
+                            StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
+                        }
+                    }
+                } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
+                    var eidList = packet.getIntLists().read(0);
+                    for (var eid : eidList) {
+                        var player = PlayerPacketWrap.getEIDPlayer(eid);
+                        if (player != null) {
+                            var packetDestroy = PlayerPacketWrap.wrapFollowerDestroy(player);
                             try {
                                 var target = event.getPlayer();
-                                pm.sendServerPacket(target, packetMove);
+                                pm.sendServerPacket(target, packetDestroy);
                             } catch (Exception e) {
-                                StyleName.logger.warning("Unable to wrap the player follower move packet.");
+                                StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
                             }
+                        }
+                    }
+                } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
+                    var eid = packet.getIntegers().read(0);
+                    var player = PlayerPacketWrap.getEIDPlayer(eid);
+                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                        var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
+                        try {
+                            var target = event.getPlayer();
+                            pm.sendServerPacket(target, packetMeta);
+                        } catch (Exception e) {
+                            StyleName.logger.warning("Unable to wrap the player follower meta packet.");
+                        }
+                    }
+                } else if (
+                        packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
+                                packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
+                                packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
+                ) {
+                    var eid = packet.getIntegers().read(0);
+                    var player = PlayerPacketWrap.getEIDPlayer(eid);
+                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                        var packetMove = PlayerPacketWrap.wrapFollowerMove(player);
+                        try {
+                            var target = event.getPlayer();
+                            pm.sendServerPacket(target, packetMove);
+                        } catch (Exception e) {
+                            StyleName.logger.warning("Unable to wrap the player follower move packet.");
                         }
                     }
                 }
             }
-        };
+        }
 
-        pm.addPacketListener(playerInfoListener);
-        pm.addPacketListener(playerMoveListener);
     }
 
 }
