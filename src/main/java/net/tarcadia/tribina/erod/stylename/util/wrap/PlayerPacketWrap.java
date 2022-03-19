@@ -58,19 +58,20 @@ public class PlayerPacketWrap {
         }
     }
 
-    public void updateEIDPlayer(@NotNull Player player) {
+    public void loadEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
+    }
+
+    public void unloadEIDPlayer(@NotNull Player player) {
+        eidPlayer.remove(player.getEntityId());
     }
 
     @Nullable
     public Player getEIDPlayer(int eid) {
         if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
             var player = eidPlayer.get(eid);
-            if (player.getEntityId() == eid && player.isOnline()) {
+            if (player.getEntityId() == eid) {
                 return player;
-            } else if (player.getEntityId() == eid && !player.isOnline()) {
-                eidPlayer.remove(eid);
-                return null;
             } else {
                 return null;
             }
@@ -205,7 +206,6 @@ public class PlayerPacketWrap {
                         var uuid = packet.getUUIDs().read(0);
                         var player = sn.getServer().getPlayer(uuid);
                         if (player != null) {
-                            updateEIDPlayer(player);
                             var packetSpawn = wrapFollowerSpawn(player);
                             var packetMeta = wrapFollowerMeta(player);
                             try {
