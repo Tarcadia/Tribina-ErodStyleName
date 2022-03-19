@@ -375,7 +375,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void updatePlayerDisplay(@NotNull Player player) {
+    public void initPlayerDisplay(@NotNull Player player) {
         var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
         var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
         var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
@@ -391,6 +391,9 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             this.addPlayerStyle(player, "Normal");
             this.setPlayerStyle(player, "Normal");
         }
+    }
+
+    public void updatePlayerDisplay(@NotNull Player player) {
         if (this.isFunctionEnabled()) {
             player.setCustomName(getPlayerDisplayName(player));
             player.setDisplayName(getPlayerDisplayFullName(player));
@@ -409,6 +412,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
+        this.initPlayerDisplay(player);
         this.updatePlayerDisplay(player);
         Skin.loadOwnSkin(player);
         ppw.loadEIDPlayer(player);
