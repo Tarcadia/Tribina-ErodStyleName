@@ -86,12 +86,18 @@ public class PlayerPacketWrap {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
+        double offset = 2.4;
+        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
+        if (player.isSneaking()) offset -= 0.4;
+        else if (player.isGliding() || player.isSwimming()) offset -= 0.8;
+        else if (player.isSleeping()) offset -= 1.2;
+
         packetSpawn.getModifier().writeDefaults();
         packetSpawn.getIntegers().write(0, eid);
         packetSpawn.getUUIDs().write(0, uuid);
         packetSpawn.getIntegers().write(1, 1);
         packetSpawn.getDoubles().write(0, player.getLocation().getX());
-        packetSpawn.getDoubles().write(1, player.getLocation().getY() + 2.4);
+        packetSpawn.getDoubles().write(1, player.getLocation().getY() + offset);
         packetSpawn.getDoubles().write(2, player.getLocation().getZ());
 
         return packetSpawn;
@@ -136,12 +142,17 @@ public class PlayerPacketWrap {
     public PacketContainer wrapFollowerMove(@NotNull Player player) {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
+        double offset = 2.4;
+        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
+        if (player.isSneaking()) offset -= 0.4;
+        else if (player.isGliding() || player.isSwimming()) offset -= 0.8;
+        else if (player.isSleeping()) offset -= 1.2;
 
         var packetMove = pm.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
         packetMove.getModifier().writeDefaults();
         packetMove.getIntegers().write(0, eid);
         packetMove.getDoubles().write(0, player.getLocation().getX());
-        packetMove.getDoubles().write(1, player.getLocation().getY() + 2.4);
+        packetMove.getDoubles().write(1, player.getLocation().getY() + offset);
         packetMove.getDoubles().write(2, player.getLocation().getZ());
 
         return packetMove;
