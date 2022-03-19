@@ -235,7 +235,7 @@ public class PlayerPacketWrap {
                     var eid = packet.getIntegers().read(0);
                     var uuid = packet.getUUIDs().read(0);
                     var player = sn.getServer().getPlayer(uuid);
-                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
                         var packetSpawn = PlayerPacketWrap.wrapFollowerSpawn(player);
                         var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
                         try {
@@ -250,11 +250,13 @@ public class PlayerPacketWrap {
                     var eidList = packet.getIntLists().read(0);
                     for (var eid : eidList) {
                         var player = PlayerPacketWrap.getEIDPlayer(eid);
-                        if (player != null) {
-                            var packetDestroy = PlayerPacketWrap.wrapFollowerDestroy(player);
+                        if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
+                            var packetDestroyPlayer = PlayerPacketWrap.wrapFollowerDestroy(player);
+                            var packetDestroyTarget = (player.getGameMode().equals(GameMode.SPECTATOR)) ? PlayerPacketWrap.wrapFollowerDestroy(event.getPlayer()) : null;
                             try {
                                 var target = event.getPlayer();
-                                pm.sendServerPacket(target, packetDestroy);
+                                pm.sendServerPacket(target, packetDestroyPlayer);
+                                if (packetDestroyTarget != null) pm.sendServerPacket(player, packetDestroyTarget);
                             } catch (Exception e) {
                                 StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
                             }
@@ -263,7 +265,7 @@ public class PlayerPacketWrap {
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                     var eid = packet.getIntegers().read(0);
                     var player = PlayerPacketWrap.getEIDPlayer(eid);
-                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
                         var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
                         try {
                             var target = event.getPlayer();
@@ -279,7 +281,7 @@ public class PlayerPacketWrap {
                 ) {
                     var eid = packet.getIntegers().read(0);
                     var player = PlayerPacketWrap.getEIDPlayer(eid);
-                    if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
+                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
                         var packetMove = PlayerPacketWrap.wrapFollowerMove(player);
                         try {
                             var target = event.getPlayer();
