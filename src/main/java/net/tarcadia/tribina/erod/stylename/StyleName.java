@@ -1,7 +1,9 @@
 package net.tarcadia.tribina.erod.stylename;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.util.Skin;
+import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
@@ -89,8 +91,6 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String CMD_SN_ARG_ADD_STYLE = "add-style";
     public static final String CMD_SN_ARG_SET_STYLE = "set-style";
 
-    private PlayerPacketWrap ppw;
-
     public boolean isFunctionEnabled() {
         return config.getBoolean(KEY_ENABLED);
     }
@@ -126,12 +126,20 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @Override
     public void onEnable() {
         var commandSN = this.getCommand(CMD_SN);
+        var pm = ProtocolLibrary.getProtocolManager();
         if (commandSN != null) {
             commandSN.setExecutor(this);
             commandSN.setTabCompleter(this);
+        } else {
+            logger.severe("Register command failed.");
+        }
+        if (pm != null) {
+            pm.addPacketListener(new PlayerPacketWrap.InfoPacketAdapter());
+            pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
+        } else {
+            logger.info("Register packet adapter failed.");
         }
         this.getServer().getPluginManager().registerEvents(this, this);
-        ppw = new PlayerPacketWrap();
         logger.info("Enabled " + descrp.getName() + " v" + descrp.getVersion() + ".");
 
     }
@@ -381,19 +389,16 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     public void initPlayerDisplay(@NotNull Player player) {
-        var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
-        var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
-        var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
-        if (skinLst.isEmpty()) {
-            this.addPlayerSkin(player, "Default");
+        this.addPlayerSkin(player, "Default");
+        this.addPlayerTag(player, "NullTag");
+        this.addPlayerStyle(player, "Normal");
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN) == null) {
             this.setPlayerSkin(player, "Default");
         }
-        if (tagLst.isEmpty()) {
-            this.addPlayerTag(player, "NullTag");
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG) == null) {
             this.setPlayerTag(player, "NullTag");
         }
-        if (styleLst.isEmpty()) {
-            this.addPlayerStyle(player, "Normal");
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE) == null) {
             this.setPlayerStyle(player, "Normal");
         }
     }
@@ -419,15 +424,15 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
         this.updatePlayerDisplay(player);
-        Skin.loadOwnSkin(player);
-        ppw.loadEIDPlayer(player);
+        SkinLoad.loadOwnSkin(player);
+        PlayerPacketWrap.loadEIDPlayer(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
-        Skin.unloadOwnSkin(player);
-        ppw.unloadEIDPlayer(player);
+        SkinLoad.unloadOwnSkin(player);
+        PlayerPacketWrap.unloadEIDPlayer(player);
     }
 
     @EventHandler
