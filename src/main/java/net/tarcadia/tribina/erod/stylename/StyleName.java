@@ -2,6 +2,7 @@ package net.tarcadia.tribina.erod.stylename;
 
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.util.Skin;
+import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
@@ -419,14 +420,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
         this.updatePlayerDisplay(player);
-        Skin.loadOwnSkin(player);
+        SkinLoad.loadOwnSkin(player);
         ppw.loadEIDPlayer(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
-        Skin.unloadOwnSkin(player);
+        SkinLoad.unloadOwnSkin(player);
         ppw.unloadEIDPlayer(player);
     }
 
