@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -371,6 +372,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             player.setDisplayName(null);
             player.setPlayerListName(null);
         }
+        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
+            p.hidePlayer(this, player);
+            player.hidePlayer(this, p);
+        }
+        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
+            p.showPlayer(this, player);
+            player.showPlayer(this, p);
+        }
     }
 
     @EventHandler
@@ -385,6 +394,12 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         Skin.unloadOwnSkin(player);
+    }
+
+    @EventHandler
+    public void onPlayerGameMode(@NotNull PlayerGameModeChangeEvent event) {
+        var player = event.getPlayer();
+        this.updatePlayerDisplay(player);
     }
 
     @Override
