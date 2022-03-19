@@ -389,15 +389,9 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     public void initPlayerDisplay(@NotNull Player player) {
-        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST).isEmpty()) {
-            this.addPlayerSkin(player, "Default");
-        }
-        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST).isEmpty()) {
-            this.addPlayerTag(player, "NullTag");
-        }
-        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST).isEmpty()) {
-            this.addPlayerStyle(player, "Normal");
-        }
+        this.addPlayerSkin(player, "Default");
+        this.addPlayerTag(player, "NullTag");
+        this.addPlayerStyle(player, "Normal");
         if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN) == null) {
             this.setPlayerSkin(player, "Default");
         }
