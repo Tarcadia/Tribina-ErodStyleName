@@ -43,7 +43,7 @@ public class SkinLoad {
         }
 
         if (uuid != null) try {
-            var url = new URL(URL_API_UUID_TO_PROFILE + uuid);
+            var url = new URL(URL_API_UUID_TO_PROFILE + uuid + "?unsigned=false");
             StyleName.logger.info("Requesting: \"" + url + "\" for player profile.");
             var https = (HttpsURLConnection) url.openConnection();
             https.setRequestMethod("GET");
