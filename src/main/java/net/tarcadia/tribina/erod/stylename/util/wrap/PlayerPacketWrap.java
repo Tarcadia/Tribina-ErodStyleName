@@ -85,10 +85,10 @@ public class PlayerPacketWrap {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-        double offset = 2.2;
+        double offset = 2.0;
         if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
         if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.0;
+        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
         else if (player.isSleeping()) offset -= 1.6;
 
         packetSpawn.getModifier().writeDefaults();
@@ -147,10 +147,10 @@ public class PlayerPacketWrap {
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
-        double offset = 2.2;
+        double offset = 2.0;
         if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.2;
         if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.0;
+        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
         else if (player.isSleeping()) offset -= 1.6;
 
         var packetMove = pm.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
