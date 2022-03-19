@@ -15,13 +15,16 @@ import java.util.Map;
 
 public class SkinLoad {
 
+    public static final String URL_API_NAME_TO_UUID = "https://api.mojang.com/users/profiles/minecraft/";
+    public static final String URL_API_UUID_TO_PROFILE = "https://sessionserver.mojang.com/session/minecraft/profile/";
+
     private static final Map<String, JsonObject> textureRequestJson = new HashMap<>();
 
     synchronized public static void loadOwnSkin(@NotNull Player player) {
         String uuid = null;
         JsonObject tx;
         try{
-            var url = new URL(StyleName.URL_API_NAME_TO_UUID + player.getName());
+            var url = new URL(URL_API_NAME_TO_UUID + player.getName());
             StyleName.logger.info("Requesting: \"" + url + "\" for player UUID.");
             var https = (HttpsURLConnection) url.openConnection();
             https.setRequestMethod("GET");
@@ -41,7 +44,7 @@ public class SkinLoad {
         }
 
         if (uuid != null) try {
-            var url = new URL(StyleName.URL_API_UUID_TO_PROFILE + uuid);
+            var url = new URL(URL_API_UUID_TO_PROFILE + uuid);
             StyleName.logger.info("Requesting: \"" + url + "\" for player profile.");
             var https = (HttpsURLConnection) url.openConnection();
             https.setRequestMethod("GET");
