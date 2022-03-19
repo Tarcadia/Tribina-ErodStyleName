@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -421,11 +422,16 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @EventHandler
-    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+    public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
-        this.updatePlayerDisplay(player);
         SkinLoad.loadOwnSkin(player);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+        var player = event.getPlayer();
+        this.updatePlayerDisplay(player);
         PlayerPacketWrap.loadEIDPlayer(player);
     }
 
