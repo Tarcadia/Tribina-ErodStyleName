@@ -255,6 +255,13 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
+    public String getPlayerStringTagVisibility(@NotNull Player player) {
+        var tagVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE);
+        if (tagVisible) return "VISIBLE";
+        else return "INVISIBLE";
+    }
+
+    @NotNull
     public List<String> getPlayerListTag(@NotNull Player player) {
         var lst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
         var ret = new LinkedList<String>();
