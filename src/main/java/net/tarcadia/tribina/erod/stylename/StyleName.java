@@ -38,6 +38,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     public static final String KEY_ENABLED = "enabled";
     public static final String KEY_PLAYERS = "players.";
+    public static final String KEY_PLAYERS_RAW_NAME_VISIBLE = ".raw-name-visible";
     public static final String KEY_PLAYERS_NAME = ".name";
     public static final String KEY_PLAYERS_SKIN = ".skin";
     public static final String KEY_PLAYERS_SKIN_LIST = ".skin-list";
@@ -51,6 +52,9 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String KEY_TEXT_FUNCTION_DISABLE = "texts.function-disable";
     public static final String KEY_TEXT_FUNCTION_FAIL = "texts.function-fail";
     public static final String KEY_TEXT_LIST_FAIL = "texts.list-fail";
+    public static final String KEY_TEXT_SET_RAW_NAME_VISIBLE = "texts.set-raw-name-visible";
+    public static final String KEY_TEXT_SET_RAW_NAME_INVISIBLE = "texts.set-raw-name-invisible";
+    public static final String KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL = "texts.set-raw-name-visibility-fail";
     public static final String KEY_TEXT_SET_NAME = "texts.set-name";
     public static final String KEY_TEXT_SET_NAME_FAIL = "texts.set-name-fail";
     public static final String KEY_TEXT_ADD_SKIN = "texts.add-skin";
@@ -73,6 +77,8 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String CMD_SN_ARG_ENABLE = "enable";
     public static final String CMD_SN_ARG_DISABLE = "disable";
     public static final String CMD_SN_ARG_LIST = "list";
+    public static final String CMD_SN_ARG_SET_RAW_NAME_VISIBLE = "set-raw-name-visible";
+    public static final String CMD_SN_ARG_SET_RAW_NAME_INVISIBLE = "set-raw-name-invisible";
     public static final String CMD_SN_ARG_SET_NAME = "set-name";
     public static final String CMD_SN_ARG_ADD_SKIN = "add-skin";
     public static final String CMD_SN_ARG_SET_SKIN = "set-skin";
