@@ -8,6 +8,7 @@ import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
 import net.tarcadia.tribina.erod.stylename.util.wrap.PlayerPacketWrap;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -433,6 +434,15 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
         PlayerPacketWrap.unloadEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
+        var player = event.getPlayer();
+        var fromMode = player.getGameMode();
+        var toMode = event.getNewGameMode();
+        if (fromMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.showAllFollower(player);
+        if (toMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.hideAllFollower(player);
     }
 
     @Override
