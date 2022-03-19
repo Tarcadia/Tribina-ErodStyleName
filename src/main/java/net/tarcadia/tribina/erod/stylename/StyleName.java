@@ -465,6 +465,26 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
                     sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_LIST_FAIL), ""));
                 }
                 return true;
+            } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_VISIBLE))) {
+                var player = this.getServer().getPlayer(args[1]);
+                if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.setPlayerRawNameVisibility(player, true);
+                    this.updatePlayerDisplay(player);
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBLE), "").replace("$player$", player.getName()));
+                } else {
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL), ""));
+                }
+                return true;
+            } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_INVISIBLE))) {
+                var player = this.getServer().getPlayer(args[1]);
+                if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.setPlayerRawNameVisibility(player, false);
+                    this.updatePlayerDisplay(player);
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_INVISIBLE), "").replace("$player$", player.getName()));
+                } else {
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL), ""));
+                }
+                return true;
             } else if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_NAME))) {
                 var player = this.getServer().getPlayer(args[1]);
                 if (sender.isOp() && (player != null) && this.setPlayerName(player, args[2])) {
