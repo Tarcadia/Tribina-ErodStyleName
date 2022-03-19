@@ -1,5 +1,6 @@
 package net.tarcadia.tribina.erod.stylename;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.util.Skin;
 import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
@@ -90,8 +91,6 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String CMD_SN_ARG_ADD_STYLE = "add-style";
     public static final String CMD_SN_ARG_SET_STYLE = "set-style";
 
-    private PlayerPacketWrap ppw;
-
     public boolean isFunctionEnabled() {
         return config.getBoolean(KEY_ENABLED);
     }
@@ -127,12 +126,20 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @Override
     public void onEnable() {
         var commandSN = this.getCommand(CMD_SN);
+        var pm = ProtocolLibrary.getProtocolManager();
         if (commandSN != null) {
             commandSN.setExecutor(this);
             commandSN.setTabCompleter(this);
+        } else {
+            logger.severe("Register command failed.");
+        }
+        if (pm != null) {
+            pm.addPacketListener(new PlayerPacketWrap.InfoPacketAdapter());
+            pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
+        } else {
+            logger.info("Register packet adapter failed.");
         }
         this.getServer().getPluginManager().registerEvents(this, this);
-        ppw = new PlayerPacketWrap();
         logger.info("Enabled " + descrp.getName() + " v" + descrp.getVersion() + ".");
 
     }
@@ -424,14 +431,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         this.initPlayerDisplay(player);
         this.updatePlayerDisplay(player);
         SkinLoad.loadOwnSkin(player);
-        ppw.loadEIDPlayer(player);
+        PlayerPacketWrap.loadEIDPlayer(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
-        ppw.unloadEIDPlayer(player);
+        PlayerPacketWrap.unloadEIDPlayer(player);
     }
 
     @EventHandler
