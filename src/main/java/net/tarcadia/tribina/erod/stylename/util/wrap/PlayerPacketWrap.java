@@ -267,13 +267,9 @@ public class PlayerPacketWrap {
                     if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
                         var packetSpawnPlayer = PlayerPacketWrap.wrapFollowerSpawn(player);
                         var packetMetaPlayer = PlayerPacketWrap.wrapFollowerMeta(player);
-                        var packetSpawnTarget = !player.getGameMode().equals(GameMode.SPECTATOR) ? PlayerPacketWrap.wrapFollowerSpawn(target) : null;
-                        var packetMetaTarget = !player.getGameMode().equals(GameMode.SPECTATOR) ? PlayerPacketWrap.wrapFollowerMeta(target) : null;
                         try {
                             pm.sendServerPacket(target, packetSpawnPlayer);
                             pm.sendServerPacket(target, packetMetaPlayer);
-                            if (packetSpawnTarget != null) pm.sendServerPacket(player, packetSpawnTarget);
-                            if (packetMetaTarget != null) pm.sendServerPacket(player, packetMetaTarget);
                         } catch (Exception e) {
                             StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
                         }
@@ -285,10 +281,8 @@ public class PlayerPacketWrap {
                         var target = event.getPlayer();
                         if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetDestroyPlayer = PlayerPacketWrap.wrapFollowerDestroy(player);
-                            var packetDestroyTarget = (player.getGameMode().equals(GameMode.SPECTATOR)) ? PlayerPacketWrap.wrapFollowerDestroy(event.getPlayer()) : null;
                             try {
                                 pm.sendServerPacket(target, packetDestroyPlayer);
-                                if (packetDestroyTarget != null) pm.sendServerPacket(player, packetDestroyTarget);
                             } catch (Exception e) {
                                 StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
                             }
