@@ -222,7 +222,6 @@ public class PlayerPacketWrap {
                         for (var eid : eidList) {
                             var player = getEIDPlayer(eid);
                             if (player != null) {
-                                sn.getLogger().info("ENTITY DESTROY: " + player.getName());
                                 var packetDestroy = wrapFollowerDestroy(player);
                                 try {
                                     var target = event.getPlayer();
