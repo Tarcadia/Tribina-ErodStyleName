@@ -78,10 +78,23 @@ public class PlayerPacketWrap {
         }
     }
 
+    public static void hideOneFollower(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
+        for (var p : player.getWorld().getPlayers()) if (p != player) {
+            try {
+                var packetDestroy = wrapFollowerDestroy(player);
+                pm.sendServerPacket(p, packetDestroy);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
+            }
+        }
+    }
+
     public static void hideAllFollower(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
-        for (var p : player.getWorld().getPlayers()) if(p != player) {
+        for (var p : player.getWorld().getPlayers()) if (p != player) {
             try {
                 var packetDestroy = wrapFollowerDestroy(p);
                 pm.sendServerPacket(player, packetDestroy);
@@ -94,7 +107,7 @@ public class PlayerPacketWrap {
     public static void showAllFollower(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
-        for (var p : player.getWorld().getPlayers()) if(p != player) {
+        for (var p : player.getWorld().getPlayers()) if (p != player) {
             try {
                 var packetSpawn = wrapFollowerSpawn(p);
                 var packetMeta = wrapFollowerMeta(p);
