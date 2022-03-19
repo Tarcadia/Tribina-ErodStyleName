@@ -136,6 +136,10 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         logger.info("Disabled " + descrp.getName() + " v" + descrp.getVersion() + ".");
     }
 
+    public void setPlayerRawNameVisibility(@NotNull Player player, boolean visibility) {
+        config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE, visibility);
+    }
+
     public boolean setPlayerName(@NotNull Player player, @NotNull String name) {
         if (!name.contains("§") && name.getBytes(StandardCharsets.UTF_8).length <= 16) {
             config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_NAME, name);
@@ -192,6 +196,17 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
 
+
+    @NotNull
+    public String getPlayerStringRawNameVisibility(@NotNull Player player) {
+        var rawNameVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
+        if (rawNameVisible) return "VISIBLE";
+        else return "INVISIBLE";
+    }
+
+    public boolean getPlayerRawNameVisibility(@NotNull Player player) {
+        return config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
+    }
 
     @NotNull
     public String getPlayerStringName(@NotNull Player player) {
