@@ -19,7 +19,7 @@ public class SkinLoad {
 
     synchronized public static void loadOwnSkin(@NotNull Player player) {
         String uuid = null;
-        JsonObject tx = null;
+        JsonObject tx;
         try{
             var url = new URL(StyleName.URL_API_NAME_TO_UUID + player.getName());
             StyleName.logger.info("Requesting: \"" + url + "\" for player UUID.");
