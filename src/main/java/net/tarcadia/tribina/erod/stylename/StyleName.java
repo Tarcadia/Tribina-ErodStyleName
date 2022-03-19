@@ -97,13 +97,18 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     public void functionEnable() {
         config.set(KEY_ENABLED, true);
-        for (var p : plugin.getServer().getOnlinePlayers()) this.updatePlayerDisplay(p);
+        for (var p : plugin.getServer().getOnlinePlayers()) {
+            this.initPlayerDisplay(p);
+            this.updatePlayerDisplay(p);
+        }
         logger.info("Plugin functional enabled.");
     }
 
     public void functionDisable() {
         config.set(KEY_ENABLED, false);
-        for (var p : plugin.getServer().getOnlinePlayers()) this.updatePlayerDisplay(p);
+        for (var p : plugin.getServer().getOnlinePlayers()) {
+            this.updatePlayerDisplay(p);
+        }
         logger.info("Plugin functional disabled.");
     }
 
@@ -453,6 +458,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST))) {
                 var player = this.getServer().getPlayer(args[1]);
                 if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.initPlayerDisplay(player);
                     this.updatePlayerDisplay(player);
                     sender.sendMessage(player.getName() + ":\n");
                     sender.sendMessage("player: " + player.getName() + " [" + this.getPlayerStringRawNameVisibility(player) + "]" + '\n');
