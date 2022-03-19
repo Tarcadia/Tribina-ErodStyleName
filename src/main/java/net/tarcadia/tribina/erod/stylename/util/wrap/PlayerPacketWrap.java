@@ -78,6 +78,34 @@ public class PlayerPacketWrap {
         }
     }
 
+    public static void hideAllFollower(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
+        for (var p : player.getWorld().getPlayers()) {
+            try {
+                var packetDestroy = wrapFollowerDestroy(p);
+                pm.sendServerPacket(player, packetDestroy);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
+            }
+        }
+    }
+
+    public static void showAllFollower(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
+        for (var p : player.getWorld().getPlayers()) {
+            try {
+                var packetSpawn = wrapFollowerSpawn(p);
+                var packetMeta = wrapFollowerMeta(p);
+                pm.sendServerPacket(player, packetSpawn);
+                pm.sendServerPacket(player, packetMeta);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
+            }
+        }
+    }
+
     @NotNull
     public static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
         var sn = StyleName.plugin;
