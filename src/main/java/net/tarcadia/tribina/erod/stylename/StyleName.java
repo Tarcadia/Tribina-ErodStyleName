@@ -453,7 +453,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
                     sender.sendMessage(player.getName() + ":\n");
                     sender.sendMessage("name:  " + this.getPlayerStringName(player) + '\n');
                     sender.sendMessage("skin:  " + this.getPlayerStringSkin(player) + '\n');
-                    sender.sendMessage("tag:   " + this.getPlayerStringTag(player) + '\n');
+                    sender.sendMessage("tag:   " + this.getPlayerStringTag(player) + " [" + this.getPlayerStringTagVisibility(player) + "]" + '\n');
                     sender.sendMessage("style: " + this.getPlayerStringStyle(player) + '\n');
                     sender.sendMessage("skin list:\n");
                     for (var s : this.getPlayerListSkin(player)) sender.sendMessage("  - " + s + '\n');
