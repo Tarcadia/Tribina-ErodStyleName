@@ -434,6 +434,10 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerGameMode(@NotNull PlayerGameModeChangeEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
+        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
+            player.hidePlayer(this, p);
+            player.showPlayer(this, p);
+        }
     }
 
     @Override
