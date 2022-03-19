@@ -9,6 +9,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -205,7 +206,7 @@ public class PlayerPacketWrap {
                         var eid = packet.getIntegers().read(0);
                         var uuid = packet.getUUIDs().read(0);
                         var player = sn.getServer().getPlayer(uuid);
-                        if (player != null) {
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetSpawn = wrapFollowerSpawn(player);
                             var packetMeta = wrapFollowerMeta(player);
                             try {
@@ -234,7 +235,7 @@ public class PlayerPacketWrap {
                     } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                         var eid = packet.getIntegers().read(0);
                         var player = getEIDPlayer(eid);
-                        if (player != null) {
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetMeta = wrapFollowerMeta(player);
                             try {
                                 var target = event.getPlayer();
@@ -250,7 +251,7 @@ public class PlayerPacketWrap {
                     ) {
                         var eid = packet.getIntegers().read(0);
                         var player = getEIDPlayer(eid);
-                        if (player != null) {
+                        if (player != null && !player.getGameMode().equals(GameMode.SPECTATOR)) {
                             var packetMove = wrapFollowerMove(player);
                             try {
                                 var target = event.getPlayer();
