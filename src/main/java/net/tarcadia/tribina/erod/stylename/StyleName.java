@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -37,6 +38,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     public static final String KEY_ENABLED = "enabled";
     public static final String KEY_PLAYERS = "players.";
+    public static final String KEY_PLAYERS_RAW_NAME_VISIBLE = ".raw-name-visible";
     public static final String KEY_PLAYERS_NAME = ".name";
     public static final String KEY_PLAYERS_SKIN = ".skin";
     public static final String KEY_PLAYERS_SKIN_LIST = ".skin-list";
@@ -50,6 +52,9 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String KEY_TEXT_FUNCTION_DISABLE = "texts.function-disable";
     public static final String KEY_TEXT_FUNCTION_FAIL = "texts.function-fail";
     public static final String KEY_TEXT_LIST_FAIL = "texts.list-fail";
+    public static final String KEY_TEXT_SET_RAW_NAME_VISIBLE = "texts.set-raw-name-visible";
+    public static final String KEY_TEXT_SET_RAW_NAME_INVISIBLE = "texts.set-raw-name-invisible";
+    public static final String KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL = "texts.set-raw-name-visibility-fail";
     public static final String KEY_TEXT_SET_NAME = "texts.set-name";
     public static final String KEY_TEXT_SET_NAME_FAIL = "texts.set-name-fail";
     public static final String KEY_TEXT_ADD_SKIN = "texts.add-skin";
@@ -72,6 +77,8 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String CMD_SN_ARG_ENABLE = "enable";
     public static final String CMD_SN_ARG_DISABLE = "disable";
     public static final String CMD_SN_ARG_LIST = "list";
+    public static final String CMD_SN_ARG_SET_RAW_NAME_VISIBLE = "set-raw-name-visible";
+    public static final String CMD_SN_ARG_SET_RAW_NAME_INVISIBLE = "set-raw-name-invisible";
     public static final String CMD_SN_ARG_SET_NAME = "set-name";
     public static final String CMD_SN_ARG_ADD_SKIN = "add-skin";
     public static final String CMD_SN_ARG_SET_SKIN = "set-skin";
@@ -90,13 +97,18 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     public void functionEnable() {
         config.set(KEY_ENABLED, true);
-        for (var p : plugin.getServer().getOnlinePlayers()) this.updatePlayerDisplay(p);
+        for (var p : plugin.getServer().getOnlinePlayers()) {
+            this.initPlayerDisplay(p);
+            this.updatePlayerDisplay(p);
+        }
         logger.info("Plugin functional enabled.");
     }
 
     public void functionDisable() {
         config.set(KEY_ENABLED, false);
-        for (var p : plugin.getServer().getOnlinePlayers()) this.updatePlayerDisplay(p);
+        for (var p : plugin.getServer().getOnlinePlayers()) {
+            this.updatePlayerDisplay(p);
+        }
         logger.info("Plugin functional disabled.");
     }
 
@@ -127,6 +139,10 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @Override
     public void onDisable() {
         logger.info("Disabled " + descrp.getName() + " v" + descrp.getVersion() + ".");
+    }
+
+    public void setPlayerRawNameVisibility(@NotNull Player player, boolean visibility) {
+        config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE, visibility);
     }
 
     public boolean setPlayerName(@NotNull Player player, @NotNull String name) {
@@ -187,6 +203,17 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
 
     @NotNull
+    public String getPlayerStringRawNameVisibility(@NotNull Player player) {
+        var rawNameVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
+        if (rawNameVisible) return "VISIBLE";
+        else return "INVISIBLE";
+    }
+
+    public boolean getPlayerRawNameVisibility(@NotNull Player player) {
+        return config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
+    }
+
+    @NotNull
     public String getPlayerStringName(@NotNull Player player) {
         return config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_NAME, player.getName());
     }
@@ -230,6 +257,13 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             ret = tag + " (NOT SUPPORTED)";
         }
         return ret;
+    }
+
+    @NotNull
+    public String getPlayerStringTagVisibility(@NotNull Player player) {
+        var tagVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE);
+        if (tagVisible) return "VISIBLE";
+        else return "INVISIBLE";
     }
 
     @NotNull
@@ -346,7 +380,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void updatePlayerDisplay(@NotNull Player player) {
+    public void initPlayerDisplay(@NotNull Player player) {
         var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
         var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
         var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
@@ -362,27 +396,48 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             this.addPlayerStyle(player, "Normal");
             this.setPlayerStyle(player, "Normal");
         }
+    }
+
+    public void updatePlayerDisplay(@NotNull Player player) {
         if (this.isFunctionEnabled()) {
+            player.setCustomName(getPlayerDisplayName(player));
             player.setDisplayName(getPlayerDisplayFullName(player));
             player.setPlayerListName(getPlayerDisplayName(player));
         } else {
+            player.setCustomName(null);
             player.setDisplayName(null);
             player.setPlayerListName(null);
+        }
+        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
+            p.hidePlayer(this, player);
+            p.showPlayer(this, player);
         }
     }
 
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
+        this.initPlayerDisplay(player);
         this.updatePlayerDisplay(player);
         Skin.loadOwnSkin(player);
-        ppw.updateEIDPlayer(player);
+        ppw.loadEIDPlayer(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         Skin.unloadOwnSkin(player);
+        ppw.unloadEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerGameMode(@NotNull PlayerGameModeChangeEvent event) {
+        var player = event.getPlayer();
+        this.updatePlayerDisplay(player);
+        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
+            player.hidePlayer(this, p);
+            player.showPlayer(this, p);
+        }
     }
 
     @Override
@@ -407,12 +462,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST))) {
                 var player = this.getServer().getPlayer(args[1]);
                 if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.initPlayerDisplay(player);
                     this.updatePlayerDisplay(player);
                     sender.sendMessage(player.getName() + ":\n");
-                    sender.sendMessage("name:  " + this.getPlayerStringName(player) + '\n');
-                    sender.sendMessage("skin:  " + this.getPlayerStringSkin(player) + '\n');
-                    sender.sendMessage("tag:   " + this.getPlayerStringTag(player) + '\n');
-                    sender.sendMessage("style: " + this.getPlayerStringStyle(player) + '\n');
+                    sender.sendMessage("player: " + player.getName() + " [" + this.getPlayerStringRawNameVisibility(player) + "]" + '\n');
+                    sender.sendMessage("name:   " + this.getPlayerStringName(player) + '\n');
+                    sender.sendMessage("skin:   " + this.getPlayerStringSkin(player) + '\n');
+                    sender.sendMessage("tag:    " + this.getPlayerStringTag(player) + " [" + this.getPlayerStringTagVisibility(player) + "]" + '\n');
+                    sender.sendMessage("style:  " + this.getPlayerStringStyle(player) + '\n');
                     sender.sendMessage("skin list:\n");
                     for (var s : this.getPlayerListSkin(player)) sender.sendMessage("  - " + s + '\n');
                     sender.sendMessage("tag list:\n");
@@ -421,6 +478,26 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
                     for (var s : this.getPlayerListStyle(player)) sender.sendMessage("  - " + s + '\n');
                 } else {
                     sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_LIST_FAIL), ""));
+                }
+                return true;
+            } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_VISIBLE))) {
+                var player = this.getServer().getPlayer(args[1]);
+                if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.setPlayerRawNameVisibility(player, true);
+                    this.updatePlayerDisplay(player);
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBLE), "").replace("$player$", player.getName()));
+                } else {
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL), ""));
+                }
+                return true;
+            } else if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_INVISIBLE))) {
+                var player = this.getServer().getPlayer(args[1]);
+                if ((sender.isOp() || sender.equals(player)) && (player != null)) {
+                    this.setPlayerRawNameVisibility(player, false);
+                    this.updatePlayerDisplay(player);
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_INVISIBLE), "").replace("$player$", player.getName()));
+                } else {
+                    sender.sendMessage(Objects.requireNonNullElse(config.getString(KEY_TEXT_SET_RAW_NAME_VISIBILITY_FAIL), ""));
                 }
                 return true;
             } else if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_NAME))) {
@@ -521,41 +598,51 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             if ((args.length == 1) && sender.isOp() && !this.isFunctionEnabled()) ret.add(CMD_SN_ARG_ENABLE);
             if ((args.length == 1) && sender.isOp() && this.isFunctionEnabled()) ret.add(CMD_SN_ARG_DISABLE);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_LIST);
-            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_SET_NAME);
-            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_SKIN);
-            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_TAG);
-            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_STYLE);
+            if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_RAW_NAME_VISIBLE);
+            if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_RAW_NAME_INVISIBLE);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_SKIN);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_TAG);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_TAG_VISIBLE);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_TAG_INVISIBLE);
             if ((args.length == 1)) ret.add(CMD_SN_ARG_SET_STYLE);
+            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_SET_NAME);
+            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_SKIN);
+            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_TAG);
+            if ((args.length == 1) && sender.isOp()) ret.add(CMD_SN_ARG_ADD_STYLE);
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_VISIBLE)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_INVISIBLE)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG_VISIBLE)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG_INVISIBLE)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_NAME)) && sender.isOp() && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_SKIN)) && sender.isOp() && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_TAG)) && sender.isOp() && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_STYLE)) && sender.isOp() && (sender instanceof Player)) ret.add(sender.getName());
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_VISIBLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_RAW_NAME_INVISIBLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG_VISIBLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG_INVISIBLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_NAME)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_SKIN)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_TAG)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_STYLE)) && sender.isOp()) ret.add("<player>");
+            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && (sender instanceof Player)) ret.addAll(this.getPlayerListSkin((Player) sender));
+            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && (sender instanceof Player)) ret.addAll(this.getPlayerListTag((Player) sender));
+            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && (sender instanceof Player)) ret.addAll(this.getPlayerListStyle((Player) sender));
             if ((args.length == 3) && sender.isOp() && (args[0].equals(CMD_SN_ARG_SET_NAME))) ret.add("<name>");
             if ((args.length == 3) && sender.isOp() && (args[0].equals(CMD_SN_ARG_ADD_SKIN))) ret.add("<skin>");
             if ((args.length == 3) && sender.isOp() && (args[0].equals(CMD_SN_ARG_ADD_TAG))) ret.add("<tag>");
             if ((args.length == 3) && sender.isOp() && (args[0].equals(CMD_SN_ARG_ADD_STYLE))) ret.add("<style>");
-            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && (sender instanceof Player)) ret.addAll(this.getPlayerListSkin((Player) sender));
             if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_SKIN))) ret.add("<skin>");
-            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && (sender instanceof Player)) ret.addAll(this.getPlayerListTag((Player) sender));
             if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_TAG))) ret.add("<tag>");
-            if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && (sender instanceof Player)) ret.addAll(this.getPlayerListStyle((Player) sender));
             if ((args.length == 3) && (args[0].equals(CMD_SN_ARG_SET_STYLE))) ret.add("<style>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_LIST)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_NAME)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_NAME)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_SKIN)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_SKIN)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_SKIN)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_TAG)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_TAG)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_TAG)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_STYLE)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_ADD_STYLE)) && sender.isOp()) ret.add("<player>");
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && (sender instanceof Player)) ret.add(sender.getName());
-            if ((args.length == 2) && (args[0].equals(CMD_SN_ARG_SET_STYLE)) && sender.isOp()) ret.add("<player>");
             return ret;
         } else {
             return null;
