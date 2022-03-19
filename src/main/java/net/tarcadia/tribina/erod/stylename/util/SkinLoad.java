@@ -39,7 +39,6 @@ public class SkinLoad {
                 StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
         }
 
@@ -60,7 +59,6 @@ public class SkinLoad {
                 StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
         }
     }
