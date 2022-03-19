@@ -374,11 +374,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
         for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
             p.hidePlayer(this, player);
-            player.hidePlayer(this, p);
-        }
-        for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
             p.showPlayer(this, player);
-            player.showPlayer(this, p);
         }
     }
 
