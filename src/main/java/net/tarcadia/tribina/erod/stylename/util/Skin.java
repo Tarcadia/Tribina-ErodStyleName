@@ -28,7 +28,7 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinValue(@NotNull Player player) {
-            var tx = textures.get(player.getName());
+            var tx = textureRequestJson.get(player.getName());
             if (tx != null) {
                 try {
                     return tx.get("value").getAsString();
@@ -42,7 +42,7 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinSignature(@NotNull Player player) {
-            var tx = textures.get(player.getName());
+            var tx = textureRequestJson.get(player.getName());
             if (tx != null) {
                 try {
                     return tx.get("signature").getAsString();
@@ -93,7 +93,7 @@ public enum Skin {
 
     ;
 
-    private static final Map<String, JsonObject> textures = new HashMap<>();
+    private static final Map<String, JsonObject> textureRequestJson = new HashMap<>();
 
     synchronized public static void loadOwnSkin(@NotNull Player player) {
         String uuid = null;
@@ -114,14 +114,14 @@ public enum Skin {
             https.setRequestProperty("Accept", "application/json");
             var message = https.getResponseMessage();
             tx = new JsonObject().getAsJsonObject(message).getAsJsonArray("properties").get(0).getAsJsonObject();
-            textures.put(player.getName(), tx);
+            textureRequestJson.put(player.getName(), tx);
         } catch (Exception e) {
             StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
         }
     }
 
     synchronized public static void unloadOwnSkin(@NotNull Player player) {
-        textures.remove(player.getName());
+        textureRequestJson.remove(player.getName());
     }
 
     @NotNull
