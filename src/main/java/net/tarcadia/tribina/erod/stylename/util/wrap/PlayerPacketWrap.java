@@ -94,7 +94,7 @@ public class PlayerPacketWrap {
     public static void showAllFollower(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
-        for (var p : player.getWorld().getPlayers()) {
+        for (var p : player.getWorld().getPlayers()) if(p != player) {
             try {
                 var packetSpawn = wrapFollowerSpawn(p);
                 var packetMeta = wrapFollowerMeta(p);
