@@ -186,7 +186,7 @@ public class PlayerPacketWrap {
                                 ((player = sn.getServer().getPlayer(profile.getUUID())) != null) &&
                                 player.isOnline()
                         ) {
-                            var name = sn.getPlayerStringName(player);
+                            var name = sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
                             var nWGP = profile.withName(name);
                             nWGP.getProperties().removeAll("textures");
                             nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
