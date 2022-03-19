@@ -1,14 +1,9 @@
 package net.tarcadia.tribina.erod.stylename.util;
 
-import com.google.gson.JsonObject;
-import net.tarcadia.tribina.erod.stylename.StyleName;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public enum Skin {
 
@@ -28,30 +23,12 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinValue(@NotNull Player player) {
-            var tx = textureRequestJson.get(player.getName());
-            if (tx != null) {
-                try {
-                    return tx.get("value").getAsString();
-                } catch (Exception e) {
-                    return Alex.skinValue(player);
-                }
-            } else {
-                return Alex.skinValue(player);
-            }
+            return Objects.requireNonNullElse(SkinLoad.getTextureValue(player), Alex.skinValue(player));
         }
 
         @Override
         synchronized public @NotNull String skinSignature(@NotNull Player player) {
-            var tx = textureRequestJson.get(player.getName());
-            if (tx != null) {
-                try {
-                    return tx.get("signature").getAsString();
-                } catch (Exception e) {
-                    return Alex.skinValue(player);
-                }
-            } else {
-                return Alex.skinValue(player);
-            }
+            return Objects.requireNonNullElse(SkinLoad.getTextureSignature(player), Alex.skinValue(player));
         }
     },
 
@@ -92,37 +69,6 @@ public enum Skin {
     }
 
     ;
-
-    private static final Map<String, JsonObject> textureRequestJson = new HashMap<>();
-
-    synchronized public static void loadOwnSkin(@NotNull Player player) {
-        String uuid = null;
-        JsonObject tx = null;
-        try{
-            var url = new URL("https://api.mojang.com/users/profiles/minecraft/" + player.getName());
-            var https = (HttpsURLConnection) url.openConnection();
-            https.setRequestProperty("Accept", "application/json");
-            var message = https.getResponseMessage();
-            uuid = new JsonObject().getAsJsonObject(message).get("id").getAsString();
-        } catch (Exception e) {
-            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
-        }
-
-        if (uuid != null) try {
-            var url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
-            var https = (HttpsURLConnection) url.openConnection();
-            https.setRequestProperty("Accept", "application/json");
-            var message = https.getResponseMessage();
-            tx = new JsonObject().getAsJsonObject(message).getAsJsonArray("properties").get(0).getAsJsonObject();
-            textureRequestJson.put(player.getName(), tx);
-        } catch (Exception e) {
-            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
-        }
-    }
-
-    synchronized public static void unloadOwnSkin(@NotNull Player player) {
-        textureRequestJson.remove(player.getName());
-    }
 
     @NotNull
     public abstract String skinValue(@NotNull Player player);
