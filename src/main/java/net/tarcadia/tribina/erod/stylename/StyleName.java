@@ -382,19 +382,22 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     public void initPlayerDisplay(@NotNull Player player) {
-        var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
-        var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
-        var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
-        if (skinLst.isEmpty()) {
+        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST).isEmpty()) {
             this.addPlayerSkin(player, "Default");
+        }
+        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST).isEmpty()) {
+            this.addPlayerTag(player, "NullTag");
+        }
+        if (config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST).isEmpty()) {
+            this.addPlayerStyle(player, "Normal");
+        }
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN) == null) {
             this.setPlayerSkin(player, "Default");
         }
-        if (tagLst.isEmpty()) {
-            this.addPlayerTag(player, "NullTag");
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG) == null) {
             this.setPlayerTag(player, "NullTag");
         }
-        if (styleLst.isEmpty()) {
-            this.addPlayerStyle(player, "Normal");
+        if (config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE) == null) {
             this.setPlayerStyle(player, "Normal");
         }
     }
