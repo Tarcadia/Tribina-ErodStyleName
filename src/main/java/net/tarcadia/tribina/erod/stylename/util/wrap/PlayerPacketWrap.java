@@ -235,13 +235,17 @@ public class PlayerPacketWrap {
                     var eid = packet.getIntegers().read(0);
                     var uuid = packet.getUUIDs().read(0);
                     var player = sn.getServer().getPlayer(uuid);
-                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
-                        var packetSpawn = PlayerPacketWrap.wrapFollowerSpawn(player);
-                        var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
+                    var target = event.getPlayer();
+                    if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
+                        var packetSpawnPlayer = PlayerPacketWrap.wrapFollowerSpawn(player);
+                        var packetMetaPlayer = PlayerPacketWrap.wrapFollowerMeta(player);
+                        var packetSpawnTarget = !player.getGameMode().equals(GameMode.SPECTATOR) ? PlayerPacketWrap.wrapFollowerSpawn(target) : null;
+                        var packetMetaTarget = !player.getGameMode().equals(GameMode.SPECTATOR) ? PlayerPacketWrap.wrapFollowerMeta(target) : null;
                         try {
-                            var target = event.getPlayer();
-                            pm.sendServerPacket(target, packetSpawn);
-                            pm.sendServerPacket(target, packetMeta);
+                            pm.sendServerPacket(target, packetSpawnPlayer);
+                            pm.sendServerPacket(target, packetMetaPlayer);
+                            if (packetSpawnTarget != null) pm.sendServerPacket(player, packetSpawnTarget);
+                            if (packetMetaTarget != null) pm.sendServerPacket(player, packetMetaTarget);
                         } catch (Exception e) {
                             StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
                         }
