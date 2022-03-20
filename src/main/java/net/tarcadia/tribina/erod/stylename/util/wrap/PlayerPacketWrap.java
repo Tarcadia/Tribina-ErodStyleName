@@ -176,6 +176,24 @@ public class PlayerPacketWrap {
         return playerCanBeViewed.contains(viewer);
     }
 
+    public static void updatePlayerFollowerMove(@NotNull Player player) {
+        Player viewer;
+        for (var view : followerViewed) {
+            if (view.y().equals(player) && (viewer = view.x()) != null) {
+                movePlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static void updatePlayerFollowerMeta(@NotNull Player player) {
+        Player viewer;
+        for (var view : followerViewed) {
+            if (view.y().equals(player) && (viewer = view.x()) != null) {
+                metaPlayerFollower(viewer, player);
+            }
+        }
+    }
+
     private static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
