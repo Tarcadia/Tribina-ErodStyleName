@@ -33,7 +33,7 @@ public class SkinLoad {
             var code = https.getResponseCode();
             if (code >= 200 && code < 300) {
                 var message = new String(https.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                StyleName.logger.info("Response: " + message);
+                //StyleName.logger.info("Response: " + message);
                 uuid = JsonParser.parseString(message).getAsJsonObject().get("id").getAsString();
             } else {
                 StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
@@ -52,7 +52,7 @@ public class SkinLoad {
             var code = https.getResponseCode();
             if (code >= 200 && code < 300) {
                 var message = new String(https.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                StyleName.logger.info("Response: " + message);
+                //StyleName.logger.info("Response: " + message);
                 tx = JsonParser.parseString(message).getAsJsonObject().getAsJsonArray("properties").get(0).getAsJsonObject();
                 textureRequestJson.put(player.getName(), tx);
             } else {
