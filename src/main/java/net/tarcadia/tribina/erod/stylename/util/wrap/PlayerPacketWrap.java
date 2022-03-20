@@ -339,7 +339,7 @@ public class PlayerPacketWrap {
                     var target = event.getPlayer();
                     if (player != null) {
                         setPlayerInView(target, player);
-                        showPlayerFollower(target, player);
+                        showPlayerFollower(target, player); // is it redundant?
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
                     var eidList = packet.getIntLists().read(0);
@@ -348,7 +348,7 @@ public class PlayerPacketWrap {
                         var target = event.getPlayer();
                         if (player != null) {
                             removePlayerInView(target, player);
-                            hidePlayerFollower(target, player);
+                            hidePlayerFollower(target, player); // is it redundant?
                         }
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
