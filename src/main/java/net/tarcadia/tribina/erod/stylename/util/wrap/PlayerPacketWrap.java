@@ -256,6 +256,13 @@ public class PlayerPacketWrap {
         var sn = StyleName.plugin;
         double offset = player.getHeight();
         if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
+        var vehicle = player.getVehicle();
+        if (vehicle instanceof Strider) offset = player.getHeight() + 1.16;
+        else if (vehicle instanceof Horse) offset = player.getHeight() + 0.85;
+        else if (vehicle instanceof Llama) offset = player.getHeight() + 0.772;
+        else if (vehicle instanceof Pig) offset = player.getHeight() + 0.325;
+        else if (vehicle instanceof Minecart) offset = player.getHeight() - 0.35;
+        else if (vehicle instanceof Boat) offset = player.getHeight() - 0.45;
         return offset;
     }
 
