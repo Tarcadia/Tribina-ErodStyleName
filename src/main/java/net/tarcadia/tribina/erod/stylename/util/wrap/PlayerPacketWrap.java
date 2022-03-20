@@ -339,13 +339,17 @@ public class PlayerPacketWrap {
                     var uuid = packet.getUUIDs().read(0);
                     var player = sn.getServer().getPlayer(uuid);
                     var target = event.getPlayer();
-                    if (player != null) showPlayerFollower(target, player);
+                    if (player != null) {
+                        setPlayerInView(target, player);
+                        showPlayerFollower(target, player);
+                    }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
                     var eidList = packet.getIntLists().read(0);
                     for (var eid : eidList) {
                         var player = getEIDPlayer(eid);
                         var target = event.getPlayer();
                         if (player != null) {
+                            removePlayerInView(target, player);
                             hidePlayerFollower(target, player);
                         }
                     }
