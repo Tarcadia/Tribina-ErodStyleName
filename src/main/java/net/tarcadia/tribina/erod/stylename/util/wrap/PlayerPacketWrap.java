@@ -370,10 +370,10 @@ public class PlayerPacketWrap {
                     ListenerPriority.NORMAL,
                     PacketType.Play.Server.NAMED_ENTITY_SPAWN,
                     PacketType.Play.Server.ENTITY_DESTROY,
-                    PacketType.Play.Server.ENTITY_METADATA,
-                    PacketType.Play.Server.REL_ENTITY_MOVE,
-                    PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
-                    PacketType.Play.Server.ENTITY_TELEPORT
+                    PacketType.Play.Server.ENTITY_METADATA
+                    //PacketType.Play.Server.REL_ENTITY_MOVE,
+                    //PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
+                    //PacketType.Play.Server.ENTITY_TELEPORT
             );
             sn = StyleName.plugin;
         }
@@ -403,23 +403,24 @@ public class PlayerPacketWrap {
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                     var eid = packet.getIntegers().read(0);
-                    var players = getEIDPlayers(eid);
+                    var player = getEIDPlayer(eid);
                     var target = event.getPlayer();
-                    for (var player : players) {
+                    if (player != null) {
                         metaPlayerFollower(target, player);
                     }
-                } else if (
-                        packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
-                                packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
-                                packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
-                ) {
-                    var eid = packet.getIntegers().read(0);
-                    var players = getEIDPlayers(eid);
-                    var target = event.getPlayer();
-                    for (var player : players) {
-                        movePlayerFollower(target, player);
-                    }
                 }
+//                else if (
+//                        packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
+//                                packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
+//                                packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
+//                ) {
+//                    var eid = packet.getIntegers().read(0);
+//                    var players = getEIDPlayers(eid);
+//                    var target = event.getPlayer();
+//                    for (var player : players) {
+//                        movePlayerFollower(target, player);
+//                    }
+//                }
             }
         }
 
