@@ -15,9 +15,9 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -470,6 +470,19 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         Entity entity = event.getExited();
         Entity vehicle = event.getVehicle();
         if (entity instanceof Player) {
+            while (vehicle != null) {
+                PlayerPacketWrap.removeVehiclePassenger(vehicle, (Player) entity);
+                vehicle = vehicle.getVehicle();
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityKilled(@NotNull EntityDeathEvent event) {
+        Entity entity = event.getEntity();
+        PlayerPacketWrap.removeVehicle(entity);
+        if (entity instanceof Player) {
+            Entity vehicle = entity.getVehicle();
             while (vehicle != null) {
                 PlayerPacketWrap.removeVehiclePassenger(vehicle, (Player) entity);
                 vehicle = vehicle.getVehicle();
