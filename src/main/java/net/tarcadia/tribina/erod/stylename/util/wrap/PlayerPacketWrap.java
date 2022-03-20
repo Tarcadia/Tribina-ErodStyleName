@@ -313,7 +313,6 @@ public class PlayerPacketWrap {
     public static final class MovePacketAdapter extends PacketAdapter {
 
         private final StyleName sn;
-        private final ProtocolManager pm;
 
         public MovePacketAdapter() {
             super(
@@ -327,7 +326,6 @@ public class PlayerPacketWrap {
                     PacketType.Play.Server.ENTITY_TELEPORT
             );
             sn = StyleName.plugin;
-            pm = ProtocolLibrary.getProtocolManager();
         }
 
         @Override
