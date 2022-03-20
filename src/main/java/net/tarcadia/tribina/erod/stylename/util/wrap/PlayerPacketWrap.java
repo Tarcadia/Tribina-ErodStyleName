@@ -78,6 +78,36 @@ public class PlayerPacketWrap {
         }
     }
 
+    public static void showOneFollower(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
+        for (var p : player.getWorld().getPlayers()) if (p != player && !p.getGameMode().equals(GameMode.SPECTATOR)) {
+            try {
+                var packetSpawn = wrapFollowerSpawn(player);
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(p, packetSpawn);
+                pm.sendServerPacket(p, packetMeta);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
+            }
+        }
+    }
+
+    public static void moveOneFollower(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        var pm = ProtocolLibrary.getProtocolManager();
+        for (var p : player.getWorld().getPlayers()) if (p != player && !p.getGameMode().equals(GameMode.SPECTATOR)) {
+            try {
+                var packetMove = wrapFollowerMove(player);
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(p, packetMove);
+                pm.sendServerPacket(p, packetMeta);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to wrap the player follower move and meta packet.");
+            }
+        }
+    }
+
     public static void hideOneFollower(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
