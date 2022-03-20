@@ -21,7 +21,6 @@ public class PlayerPacketWrap {
 
     private static final Map<Integer, Player> eidPlayer = new HashMap<>();
     private static final Map<Integer, Player> eidVehiclePlayer = new HashMap<>();
-    private static final Map<Integer, Player> eidFollower = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
 
@@ -31,7 +30,6 @@ public class PlayerPacketWrap {
         if (!followerEID.containsKey(player.getName()) || followerEID.get(player.getName()) == null) {
             var eid = new Random().nextInt(Integer.MAX_VALUE);
             followerEID.put(player.getName(), eid);
-            eidFollower.put(eid, player);
             return eid;
         } else {
             return followerEID.get(player.getName());
