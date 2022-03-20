@@ -19,7 +19,8 @@ import java.util.*;
 public class PlayerPacketWrap {
 
     private static final Map<Integer, Player> eidPlayer = new HashMap<>();
-    private static final Map<Integer, Player> eidVehiclePlayer = new HashMap<>();
+    private static final Map<Integer, Entity> eidVehicle = new HashMap<>();
+    private static final Map<UUID, Set<Player>> passengersVehicle = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
 
@@ -60,28 +61,51 @@ public class PlayerPacketWrap {
         eidPlayer.remove(player.getEntityId());
     }
 
-    public static boolean isVehiclePlayer(@NotNull Entity vehicle) {
-        return eidVehiclePlayer.containsKey(vehicle.getEntityId());
+    public static void addVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
+        passengersVehicle.putIfAbsent(vehicle.getUniqueId(), new HashSet<>());
+        var set = passengersVehicle.get(vehicle.getUniqueId());
+        set.add(player);
+        setEIDVehicle(vehicle);
     }
 
-    public static void setEIDVehiclePlayer(@NotNull Entity vehicle, @NotNull Player player) {
-        eidVehiclePlayer.put(vehicle.getEntityId(), player);
+    public static void removeVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
+        var set = passengersVehicle.get(vehicle.getUniqueId());
+        set.remove(player);
+        if (set.isEmpty()) {
+            passengersVehicle.remove(vehicle.getUniqueId());
+            removeEIDVehicle(vehicle);
+        }
     }
 
-    public static void removeEIDVehiclePlayer(@NotNull Entity vehicle) {
-        eidVehiclePlayer.remove(vehicle.getEntityId());
+    private static void setEIDVehicle(@NotNull Entity vehicle) {
+        eidVehicle.put(vehicle.getEntityId(), vehicle);
+    }
+
+    private static void removeEIDVehicle(@NotNull Entity vehicle) {
+        eidVehicle.remove(vehicle.getEntityId());
     }
 
     @Nullable
     public static Player getEIDPlayer(int eid) {
         Player player;
-        if (eidVehiclePlayer.containsKey(eid) && (player = eidVehiclePlayer.get(eid)) != null) {
-            return player;
-        } else if (eidPlayer.containsKey(eid) && (player = eidPlayer.get(eid)) != null) {
+        if (eidPlayer.containsKey(eid) && (player = eidPlayer.get(eid)) != null) {
             return player;
         } else {
             return null;
         }
+    }
+
+    @NotNull
+    public static Collection<Player> getEIDPlayers(int eid) {
+        Set<Player> players = new HashSet<>();
+        Entity entity;
+        if (eidPlayer.containsKey(eid) && (entity = eidPlayer.get(eid)) != null) {
+            players.add((Player) entity);
+        } else if (eidVehicle.containsKey(eid) && (entity = eidVehicle.get(eid)) != null) {
+            var passengers = passengersVehicle.get(entity.getUniqueId());
+            if (passengers != null) players.addAll(passengers);
+        }
+        return players;
     }
 
     private static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
