@@ -49,15 +49,6 @@ public class PlayerPacketWrap {
         }
     }
 
-    @Nullable
-    public static Player getEIDFollower(int eid) {
-        if (eidFollower.containsKey(eid) && eidFollower.get(eid) != null) {
-            return eidFollower.get(eid);
-        } else {
-            return null;
-        }
-    }
-
     public static void loadEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
     }
