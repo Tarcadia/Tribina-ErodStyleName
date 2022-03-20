@@ -205,6 +205,21 @@ public class PlayerPacketWrap {
         }
     }
 
+    private static double getFollowerNameTagOffset(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        double offset = 2.1;
+        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
+        if (player.isSneaking()) offset -= 0.4;
+        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
+        else if (player.isSleeping()) offset -= 1.6;
+        else if (player.isInsideVehicle()) {
+            var vehicle = player.getVehicle();
+            offset -= 1.4;
+            if (vehicle != null) offset += vehicle.getHeight();
+        }
+        return offset;
+    }
+
     @NotNull
     private static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
         var sn = StyleName.plugin;
@@ -212,11 +227,7 @@ public class PlayerPacketWrap {
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-        double offset = 2.1;
-        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
-        if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
-        else if (player.isSleeping()) offset -= 1.6;
+        var offset = getFollowerNameTagOffset(player);
 
         packetSpawn.getModifier().writeDefaults();
         packetSpawn.getIntegers().write(0, eid);
@@ -274,11 +285,7 @@ public class PlayerPacketWrap {
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
-        double offset = 2.1;
-        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
-        if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
-        else if (player.isSleeping()) offset -= 1.6;
+        var offset = getFollowerNameTagOffset(player);
 
         var packetMove = pm.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
         packetMove.getModifier().writeDefaults();
