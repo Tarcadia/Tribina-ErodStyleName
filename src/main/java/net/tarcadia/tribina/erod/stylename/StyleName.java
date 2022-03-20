@@ -450,6 +450,12 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @EventHandler
+    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
+        var player = event.getPlayer();
+        PlayerPacketWrap.updatePlayerFollowerMove(player);
+    }
+
+    @EventHandler
     public void onEntityVehicleEnter(@NotNull VehicleEnterEvent event) {
         Entity entity = event.getEntered();
         Entity vehicle = event.getVehicle();
