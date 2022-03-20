@@ -211,16 +211,8 @@ public class PlayerPacketWrap {
 
     private static double getFollowerNameTagOffset(@NotNull Player player) {
         var sn = StyleName.plugin;
-        double offset = 2.1;
-        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
-        if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
-        else if (player.isSleeping()) offset -= 1.6;
-        else if (player.isInsideVehicle()) {
-            var vehicle = player.getVehicle();
-            offset -= 1.4;
-            if (vehicle != null) offset += vehicle.getHeight();
-        }
+        double offset = player.getHeight();
+        if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         return offset;
     }
 
