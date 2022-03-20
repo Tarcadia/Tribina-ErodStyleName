@@ -450,7 +450,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @EventHandler
     public void onPlayerMove(@NotNull PlayerMoveEvent event) {
         var player = event.getPlayer();
-        PlayerPacketWrap.updatePlayerFollowerMove(player);
+        var to = event.getTo();
+        var from = event.getFrom();
+        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
     }
 
     @EventHandler
