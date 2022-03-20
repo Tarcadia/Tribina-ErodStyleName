@@ -445,28 +445,35 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
-        Entity vehicle;
-        if ((vehicle = player.getVehicle()) != null && vehicle instanceof Vehicle) {
-            PlayerPacketWrap.removeEIDVehiclePlayer((Vehicle) vehicle, player);
+        Entity vehicle = player.getVehicle();
+        while (vehicle != null) {
+            PlayerPacketWrap.removeVehiclePassenger(vehicle, player);
+            vehicle = vehicle.getVehicle();
         }
         PlayerPacketWrap.removeEIDPlayer(player);
     }
 
     @EventHandler
-    public void onPlayerVehicleEnter(@NotNull VehicleEnterEvent event) {
-        var player = event.getEntered();
-        var vehicle = event.getVehicle();
-        if (player instanceof Player) {
-            PlayerPacketWrap.setEIDVehiclePlayer(vehicle, (Player) player);
+    public void onEntityVehicleEnter(@NotNull VehicleEnterEvent event) {
+        Entity entity = event.getEntered();
+        Entity vehicle = event.getVehicle();
+        if (entity instanceof Player) {
+            while (vehicle != null) {
+                PlayerPacketWrap.addVehiclePassenger(vehicle, (Player) entity);
+                vehicle = vehicle.getVehicle();
+            }
         }
     }
 
     @EventHandler
-    public void onPlayerVehicleExit(@NotNull VehicleExitEvent event) {
-        var player = event.getExited();
-        var vehicle = event.getVehicle();
-        if (player instanceof Player) {
-            PlayerPacketWrap.removeEIDVehiclePlayer(vehicle, (Player) player);
+    public void onEntityVehicleExit(@NotNull VehicleExitEvent event) {
+        Entity entity = event.getExited();
+        Entity vehicle = event.getVehicle();
+        if (entity instanceof Player) {
+            while (vehicle != null) {
+                PlayerPacketWrap.removeVehiclePassenger(vehicle, (Player) entity);
+                vehicle = vehicle.getVehicle();
+            }
         }
     }
 
