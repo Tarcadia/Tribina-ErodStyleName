@@ -11,6 +11,7 @@ import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,7 @@ import java.util.*;
 public class PlayerPacketWrap {
 
     private static final Map<Integer, Player> eidPlayer = new HashMap<>();
+    private static final Map<Integer, Player> eidVehiclePlayer = new HashMap<>();
     private static final Map<Integer, Player> eidFollower = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
@@ -64,15 +66,21 @@ public class PlayerPacketWrap {
         eidPlayer.remove(player.getEntityId());
     }
 
+    public static void loadEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
+        eidPlayer.put(vehicle.getEntityId(), player);
+    }
+
+    public static void unloadEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
+        eidPlayer.remove(vehicle.getEntityId());
+    }
+
     @Nullable
     public static Player getEIDPlayer(int eid) {
-        if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
-            var player = eidPlayer.get(eid);
-            if (player.getEntityId() == eid) {
-                return player;
-            } else {
-                return null;
-            }
+        Player player;
+        if (eidVehiclePlayer.containsKey(eid) && (player = eidVehiclePlayer.get(eid)) != null) {
+            return player;
+        } else if (eidPlayer.containsKey(eid) && (player = eidPlayer.get(eid)) != null) {
+            return player;
         } else {
             return null;
         }

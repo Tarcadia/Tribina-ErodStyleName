@@ -20,6 +20,8 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -441,6 +443,24 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         PlayerPacketWrap.hideOneFollower(player);
         SkinLoad.unloadOwnSkin(player);
         PlayerPacketWrap.unloadEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerVehicleEnter(@NotNull VehicleEnterEvent event) {
+        var player = event.getEntered();
+        var vehicle = event.getVehicle();
+        if (player instanceof Player) {
+            PlayerPacketWrap.loadEIDVehiclePlayer(vehicle, (Player) player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerVehicleExit(@NotNull VehicleExitEvent event) {
+        var player = event.getExited();
+        var vehicle = event.getVehicle();
+        if (player instanceof Player) {
+            PlayerPacketWrap.unloadEIDVehiclePlayer(vehicle, (Player) player);
+        }
     }
 
     @EventHandler
