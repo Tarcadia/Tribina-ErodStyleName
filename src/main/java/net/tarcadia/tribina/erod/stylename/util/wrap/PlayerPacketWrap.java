@@ -70,10 +70,12 @@ public class PlayerPacketWrap {
 
     public static void removeVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
         var set = passengersVehicle.get(vehicle.getUniqueId());
-        set.remove(player);
-        if (set.isEmpty()) {
-            passengersVehicle.remove(vehicle.getUniqueId());
-            eidVehicle.remove(vehicle.getEntityId());
+        if (set != null) {
+            set.remove(player);
+            if (set.isEmpty()) {
+                passengersVehicle.remove(vehicle.getUniqueId());
+                eidVehicle.remove(vehicle.getEntityId());
+            }
         }
     }
 
