@@ -2,7 +2,6 @@ package net.tarcadia.tribina.erod.stylename.util.wrap;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
@@ -10,7 +9,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
 import net.tarcadia.tribina.erod.stylename.util.type.Pair;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.jetbrains.annotations.NotNull;
