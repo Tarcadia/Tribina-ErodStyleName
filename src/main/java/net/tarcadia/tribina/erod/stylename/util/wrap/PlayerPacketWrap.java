@@ -9,6 +9,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
+import net.tarcadia.tribina.erod.stylename.util.type.Pair;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -23,6 +24,9 @@ public class PlayerPacketWrap {
     private static final Map<Integer, Player> eidVehiclePlayer = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
+    private static final Set<Pair<Player, Player>> playerCanView = new HashSet<>();
+    private static final Set<Pair<Player, Player>> followerCanView = new HashSet<>();
+    private static final Set<Pair<Player, Player>> inViewFollower = new HashSet<>();
 
     private PlayerPacketWrap() {}
 
@@ -72,6 +76,94 @@ public class PlayerPacketWrap {
             return player;
         } else {
             return null;
+        }
+    }
+
+    public static void setPlayerCanView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        playerCanView.add(view);
+        if (!inViewFollower.contains(view)) showPlayerFollower(viewer, player);
+    }
+
+    public static boolean getPlayerCanView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        return playerCanView.contains(view);
+    }
+
+    public static boolean getPlayerCanView(@NotNull Pair<Player, Player> view) {
+        return playerCanView.contains(view);
+    }
+
+    public static void setFollowerCanView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        followerCanView.add(view);
+        if (inViewFollower.contains(view)) hidePlayerFollower(viewer, player);
+    }
+
+    public static boolean getFollowerCanView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        return followerCanView.contains(view);
+    }
+
+    public static boolean getFollowerCanView(@NotNull Pair<Player, Player> view) {
+        return followerCanView.contains(view);
+    }
+
+    public static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (getPlayerCanView(view) && getFollowerCanView(view) && !inViewFollower.contains(view)) {
+            try {
+                var packetSpawn = wrapFollowerSpawn(player);
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(viewer, packetSpawn);
+                pm.sendServerPacket(viewer, packetMeta);
+                inViewFollower.add(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to show player " + player.getName() + "'s follower for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    public static void hidePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (getPlayerCanView(view) && getFollowerCanView(view) && !inViewFollower.contains(view)) {
+            try {
+                var packetDestroy = wrapFollowerDestroy(player);
+                pm.sendServerPacket(viewer, packetDestroy);
+                inViewFollower.remove(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to hide player " + player.getName() + "'s follower for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    public static void metaPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (inViewFollower.contains(view)) {
+            try {
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(viewer, packetMeta);
+                inViewFollower.remove(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to send player " + player.getName() + "'s follower's metadata for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    public static void movePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (inViewFollower.contains(view)) {
+            try {
+                var packetMove = wrapFollowerMove(player);
+                pm.sendServerPacket(viewer, packetMove);
+                inViewFollower.remove(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to send player " + player.getName() + "'s follower's move for " + viewer.getName() + ".");
+            }
         }
     }
 
