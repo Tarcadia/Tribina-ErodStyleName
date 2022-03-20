@@ -404,18 +404,22 @@ public class PlayerPacketWrap {
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                     var eid = packet.getIntegers().read(0);
-                    var player = getEIDPlayer(eid);
+                    var players = getEIDPlayers(eid);
                     var target = event.getPlayer();
-                    if (player != null) metaPlayerFollower(target, player);
+                    for (var player : players) {
+                        metaPlayerFollower(target, player);
+                    }
                 } else if (
                         packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
                                 packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
                                 packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
                 ) {
                     var eid = packet.getIntegers().read(0);
-                    var player = getEIDPlayer(eid);
+                    var players = getEIDPlayers(eid);
                     var target = event.getPlayer();
-                    if (player != null) movePlayerFollower(target, player);
+                    for (var player : players) {
+                        movePlayerFollower(target, player);
+                    }
                 }
             }
         }
