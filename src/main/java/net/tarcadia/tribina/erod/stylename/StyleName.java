@@ -13,7 +13,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
@@ -435,13 +437,18 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
         PlayerPacketWrap.setEIDPlayer(player);
+        PlayerPacketWrap.setPlayerCanView(player);
+        PlayerPacketWrap.setPlayerCanBeViewed(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
-        PlayerPacketWrap.hideOneFollower(player);
         SkinLoad.unloadOwnSkin(player);
+        Entity vehicle;
+        if ((vehicle = player.getVehicle()) != null && vehicle instanceof Vehicle) {
+            PlayerPacketWrap.removeEIDVehiclePlayer((Vehicle) vehicle, player);
+        }
         PlayerPacketWrap.removeEIDPlayer(player);
     }
 
@@ -466,10 +473,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @EventHandler
     public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
         var player = event.getPlayer();
-        var fromMode = player.getGameMode();
         var toMode = event.getNewGameMode();
-        if (fromMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.showAllFollower(player);
-        if (toMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.hideAllFollower(player);
+        if (!toMode.equals(GameMode.SPECTATOR)) {
+            PlayerPacketWrap.setPlayerCanView(player);
+            PlayerPacketWrap.setPlayerCanBeViewed(player);
+        } else {
+            PlayerPacketWrap.removePlayerCanView(player);
+            PlayerPacketWrap.removePlayerCanBeViewed(player);
+        }
     }
 
     @Override
