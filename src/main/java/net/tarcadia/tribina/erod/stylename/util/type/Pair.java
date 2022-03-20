@@ -1,4 +1,4 @@
-package net.tarcadia.tribina.erod.stylename.util.data;
+package net.tarcadia.tribina.erod.stylename.util.type;
 
 public record Pair<X, Y>(X x, Y y) implements Cloneable{
 
