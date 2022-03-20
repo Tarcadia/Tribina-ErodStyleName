@@ -9,8 +9,8 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
 import net.tarcadia.tribina.erod.stylename.util.type.Pair;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Vehicle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,12 +60,16 @@ public class PlayerPacketWrap {
         eidPlayer.remove(player.getEntityId());
     }
 
-    public static void setEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
-        eidPlayer.put(vehicle.getEntityId(), player);
+    public static boolean isVehiclePlayer(@NotNull Entity vehicle) {
+        return eidVehiclePlayer.containsKey(vehicle.getEntityId());
     }
 
-    public static void removeEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
-        eidPlayer.remove(vehicle.getEntityId());
+    public static void setEIDVehiclePlayer(@NotNull Entity vehicle, @NotNull Player player) {
+        eidVehiclePlayer.put(vehicle.getEntityId(), player);
+    }
+
+    public static void removeEIDVehiclePlayer(@NotNull Entity vehicle) {
+        eidVehiclePlayer.remove(vehicle.getEntityId());
     }
 
     @Nullable
