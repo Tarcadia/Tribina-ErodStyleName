@@ -80,13 +80,13 @@ public class PlayerPacketWrap {
         }
     }
 
-    public static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
+    private static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
         var view = new Pair<>(viewer, player);
         playerInView.add(view);
         if (playerCanView.contains(viewer) && !followerViewed.contains(view)) showPlayerFollower(viewer, player);
     }
 
-    public static void removePlayerInView(@NotNull Player viewer, @NotNull Player player) {
+    private static void removePlayerInView(@NotNull Player viewer, @NotNull Player player) {
         var view = new Pair<>(viewer, player);
         playerInView.remove(view);
         if (followerViewed.contains(view)) hidePlayerFollower(viewer, player);
@@ -125,7 +125,7 @@ public class PlayerPacketWrap {
         return playerCanView.contains(viewer);
     }
 
-    public static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+    private static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
         if (getPlayerInView(view) && getPlayerCanView(viewer) && !followerViewed.contains(view)) {
@@ -141,7 +141,7 @@ public class PlayerPacketWrap {
         }
     }
 
-    public static void hidePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+    private static void hidePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
         if (getPlayerInView(view) && getPlayerCanView(viewer) && !followerViewed.contains(view)) {
@@ -155,7 +155,7 @@ public class PlayerPacketWrap {
         }
     }
 
-    public static void metaPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+    private static void metaPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
         if (followerViewed.contains(view)) {
@@ -168,7 +168,7 @@ public class PlayerPacketWrap {
         }
     }
 
-    public static void movePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+    private static void movePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
         if (followerViewed.contains(view)) {
@@ -182,7 +182,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
+    private static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
@@ -206,7 +206,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerMeta(@NotNull Player player) {
+    private static PacketContainer wrapFollowerMeta(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var metadata = new WrappedDataWatcher();
@@ -231,7 +231,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerDestroy(@NotNull Player player) {
+    private static PacketContainer wrapFollowerDestroy(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
@@ -245,7 +245,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerMove(@NotNull Player player) {
+    private static PacketContainer wrapFollowerMove(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
