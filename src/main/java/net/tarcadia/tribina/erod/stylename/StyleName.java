@@ -474,19 +474,6 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @EventHandler
-    public void onEntityKilled(@NotNull EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        PlayerPacketWrap.removeVehicle(entity);
-        if (entity instanceof Player) {
-            Entity vehicle = entity.getVehicle();
-            while (vehicle != null) {
-                PlayerPacketWrap.removeVehiclePassenger(vehicle, (Player) entity);
-                vehicle = vehicle.getVehicle();
-            }
-        }
-    }
-
-    @EventHandler
     public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
         var player = event.getPlayer();
         var toMode = event.getNewGameMode();
