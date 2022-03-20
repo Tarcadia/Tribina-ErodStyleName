@@ -57,6 +57,7 @@ public class PlayerPacketWrap {
     }
 
     public static void removeEIDPlayer(@NotNull Player player) {
+        for (var target : player.getWorld().getPlayers()) setPlayerInView(target, player);
         eidPlayer.remove(player.getEntityId());
     }
 
