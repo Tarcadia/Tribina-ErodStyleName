@@ -28,6 +28,7 @@ public class PlayerPacketWrap {
     private static final Set<Pair<Player, Player>> followerViewed = new HashSet<>();
     private static final Set<Pair<Player, Player>> playerInView = new HashSet<>();
     private static final Set<Player> playerCanView = new HashSet<>();
+    private static final Set<Player> playerCanBeViewed = new HashSet<>();
 
     private PlayerPacketWrap() {}
 
@@ -84,7 +85,7 @@ public class PlayerPacketWrap {
     private static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
         var view = new Pair<>(viewer, player);
         playerInView.add(view);
-        if (playerCanView.contains(viewer) && !followerViewed.contains(view)) showPlayerFollower(viewer, player);
+        if (playerCanView.contains(viewer) && playerCanBeViewed.contains(player) && !followerViewed.contains(view)) showPlayerFollower(viewer, player);
     }
 
     private static void removePlayerInView(@NotNull Player viewer, @NotNull Player player) {
@@ -106,7 +107,7 @@ public class PlayerPacketWrap {
         playerCanView.add(viewer);
         for (var view : playerInView) if (view.x().equals(viewer)) {
             Player player;
-            if (!followerViewed.contains(view) && (player = view.y()) != null) {
+            if (!followerViewed.contains(view) && (player = view.y()) != null && playerCanBeViewed.contains(player)) {
                 showPlayerFollower(viewer, player);
             }
         }
@@ -126,10 +127,34 @@ public class PlayerPacketWrap {
         return playerCanView.contains(viewer);
     }
 
+    public static void setPlayerCanBeViewed(@NotNull Player player) {
+        playerCanBeViewed.add(player);
+        for (var view : playerInView) if (view.y().equals(player)) {
+            Player viewer;
+            if (!followerViewed.contains(view) && (viewer = view.x()) != null && playerCanView.contains(viewer)) {
+                showPlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static void removePlayerCanBeViewed(@NotNull Player player) {
+        playerCanBeViewed.remove(player);
+        for (var view : playerInView) if (view.y().equals(player)) {
+            Player viewer;
+            if (followerViewed.contains(view) && (viewer = view.x()) != null) {
+                hidePlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static boolean getPlayerCanBeViewed(@NotNull Player viewer) {
+        return playerCanBeViewed.contains(viewer);
+    }
+
     private static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
-        if (getPlayerInView(view) && getPlayerCanView(viewer) && !followerViewed.contains(view)) {
+        if (getPlayerInView(view) && getPlayerCanView(viewer) && getPlayerCanBeViewed(player) && !followerViewed.contains(view)) {
             try {
                 var packetSpawn = wrapFollowerSpawn(player);
                 var packetMeta = wrapFollowerMeta(player);
@@ -145,7 +170,7 @@ public class PlayerPacketWrap {
     private static void hidePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
         var pm = ProtocolLibrary.getProtocolManager();
         var view = new Pair<>(viewer, player);
-        if (getPlayerInView(view) && getPlayerCanView(viewer) && !followerViewed.contains(view)) {
+        if (followerViewed.contains(view)) {
             try {
                 var packetDestroy = wrapFollowerDestroy(player);
                 pm.sendServerPacket(viewer, packetDestroy);
