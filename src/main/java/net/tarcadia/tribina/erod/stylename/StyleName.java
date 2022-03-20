@@ -434,7 +434,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        PlayerPacketWrap.loadEIDPlayer(player);
+        PlayerPacketWrap.setEIDPlayer(player);
     }
 
     @EventHandler
@@ -442,7 +442,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getPlayer();
         PlayerPacketWrap.hideOneFollower(player);
         SkinLoad.unloadOwnSkin(player);
-        PlayerPacketWrap.unloadEIDPlayer(player);
+        PlayerPacketWrap.removeEIDPlayer(player);
     }
 
     @EventHandler
@@ -450,7 +450,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getEntered();
         var vehicle = event.getVehicle();
         if (player instanceof Player) {
-            PlayerPacketWrap.loadEIDVehiclePlayer(vehicle, (Player) player);
+            PlayerPacketWrap.setEIDVehiclePlayer(vehicle, (Player) player);
         }
     }
 
@@ -459,7 +459,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var player = event.getExited();
         var vehicle = event.getVehicle();
         if (player instanceof Player) {
-            PlayerPacketWrap.unloadEIDVehiclePlayer(vehicle, (Player) player);
+            PlayerPacketWrap.removeEIDVehiclePlayer(vehicle, (Player) player);
         }
     }
 

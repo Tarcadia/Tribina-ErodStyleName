@@ -49,19 +49,19 @@ public class PlayerPacketWrap {
         }
     }
 
-    public static void loadEIDPlayer(@NotNull Player player) {
+    public static void setEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
     }
 
-    public static void unloadEIDPlayer(@NotNull Player player) {
+    public static void removeEIDPlayer(@NotNull Player player) {
         eidPlayer.remove(player.getEntityId());
     }
 
-    public static void loadEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
+    public static void setEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
         eidPlayer.put(vehicle.getEntityId(), player);
     }
 
-    public static void unloadEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
+    public static void removeEIDVehiclePlayer(@NotNull Vehicle vehicle, @NotNull Player player) {
         eidPlayer.remove(vehicle.getEntityId());
     }
 
