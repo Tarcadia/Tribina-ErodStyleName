@@ -65,7 +65,7 @@ public class PlayerPacketWrap {
         passengersVehicle.putIfAbsent(vehicle.getUniqueId(), new HashSet<>());
         var set = passengersVehicle.get(vehicle.getUniqueId());
         set.add(player);
-        setEIDVehicle(vehicle);
+        eidVehicle.put(vehicle.getEntityId(), vehicle);
     }
 
     public static void removeVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
@@ -73,15 +73,12 @@ public class PlayerPacketWrap {
         set.remove(player);
         if (set.isEmpty()) {
             passengersVehicle.remove(vehicle.getUniqueId());
-            removeEIDVehicle(vehicle);
+            eidVehicle.remove(vehicle.getEntityId());
         }
     }
 
-    private static void setEIDVehicle(@NotNull Entity vehicle) {
-        eidVehicle.put(vehicle.getEntityId(), vehicle);
-    }
-
-    private static void removeEIDVehicle(@NotNull Entity vehicle) {
+    public static void removeVehicle(@NotNull Entity vehicle) {
+        passengersVehicle.remove(vehicle.getUniqueId());
         eidVehicle.remove(vehicle.getEntityId());
     }
 
