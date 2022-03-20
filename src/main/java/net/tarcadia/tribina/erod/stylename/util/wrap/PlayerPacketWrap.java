@@ -409,11 +409,11 @@ public class PlayerPacketWrap {
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
                     var eidList = packet.getIntLists().read(0);
                     for (var eid : eidList) {
-                        var player = PlayerPacketWrap.getEIDPlayer(eid);
+                        var player = getEIDPlayer(eid);
                         var target = event.getPlayer();
                         if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
                             try {
-                                var packetDestroyPlayer = PlayerPacketWrap.wrapFollowerDestroy(player);
+                                var packetDestroyPlayer = wrapFollowerDestroy(player);
                                 pm.sendServerPacket(target, packetDestroyPlayer);
                             } catch (Exception e) {
                                 StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
@@ -422,11 +422,11 @@ public class PlayerPacketWrap {
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                     var eid = packet.getIntegers().read(0);
-                    var player = PlayerPacketWrap.getEIDPlayer(eid);
+                    var player = getEIDPlayer(eid);
                     var target = event.getPlayer();
                     if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
                         try {
-                            var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
+                            var packetMeta = wrapFollowerMeta(player);
                             pm.sendServerPacket(target, packetMeta);
                         } catch (Exception e) {
                             StyleName.logger.warning("Unable to wrap the player follower meta packet.");
@@ -438,11 +438,11 @@ public class PlayerPacketWrap {
                                 packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
                 ) {
                     var eid = packet.getIntegers().read(0);
-                    var player = PlayerPacketWrap.getEIDPlayer(eid);
+                    var player = getEIDPlayer(eid);
                     var target = event.getPlayer();
                     if (player != null && !target.getGameMode().equals(GameMode.SPECTATOR)) {
                         try {
-                            var packetMove = PlayerPacketWrap.wrapFollowerMove(player);
+                            var packetMove = wrapFollowerMove(player);
                             pm.sendServerPacket(target, packetMove);
                         } catch (Exception e) {
                             StyleName.logger.warning("Unable to wrap the player follower move packet.");
