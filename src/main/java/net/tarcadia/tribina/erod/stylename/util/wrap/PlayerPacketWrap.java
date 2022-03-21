@@ -18,8 +18,6 @@ import java.util.*;
 public class PlayerPacketWrap {
 
     private static final Map<Integer, Player> eidPlayer = new HashMap<>();
-    private static final Map<Integer, Entity> eidVehicle = new HashMap<>();
-    private static final Map<UUID, Set<Player>> passengersVehicle = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
 
@@ -70,19 +68,6 @@ public class PlayerPacketWrap {
         } else {
             return null;
         }
-    }
-
-    @NotNull
-    public static Collection<Player> getEIDPlayers(int eid) {
-        Set<Player> players = new HashSet<>();
-        Entity entity;
-        if (eidPlayer.containsKey(eid) && (entity = eidPlayer.get(eid)) != null) {
-            players.add((Player) entity);
-        } else if (eidVehicle.containsKey(eid) && (entity = eidVehicle.get(eid)) != null) {
-            var passengers = passengersVehicle.get(entity.getUniqueId());
-            if (passengers != null) players.addAll(passengers);
-        }
-        return players;
     }
 
     private static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
