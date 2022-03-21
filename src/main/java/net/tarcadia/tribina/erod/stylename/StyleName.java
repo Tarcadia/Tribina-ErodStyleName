@@ -442,11 +442,6 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
-        Entity vehicle = player.getVehicle();
-        while (vehicle != null) {
-            PlayerPacketWrap.removeVehiclePassenger(vehicle, player);
-            vehicle = vehicle.getVehicle();
-        }
         PlayerPacketWrap.removeEIDPlayer(player);
     }
 
