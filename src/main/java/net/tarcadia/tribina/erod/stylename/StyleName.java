@@ -7,23 +7,19 @@ import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
+import net.tarcadia.tribina.erod.stylename.util.run.PlayerFollower;
 import net.tarcadia.tribina.erod.stylename.util.wrap.PlayerPacketWrap;
-import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.spigotmc.event.entity.EntityDismountEvent;
-import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -94,11 +90,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public static final String CMD_SN_ARG_ADD_STYLE = "add-style";
     public static final String CMD_SN_ARG_SET_STYLE = "set-style";
 
-    public boolean isFunctionEnabled() {
+    synchronized public boolean isFunctionEnabled() {
         return config.getBoolean(KEY_ENABLED);
     }
 
-    public void functionEnable() {
+    synchronized public void functionEnable() {
         config.set(KEY_ENABLED, true);
         for (var p : plugin.getServer().getOnlinePlayers()) {
             this.initPlayerDisplay(p);
@@ -107,7 +103,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         logger.info("Plugin functional enabled.");
     }
 
-    public void functionDisable() {
+    synchronized public void functionDisable() {
         config.set(KEY_ENABLED, false);
         for (var p : plugin.getServer().getOnlinePlayers()) {
             this.updatePlayerDisplay(p);
@@ -138,7 +134,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
         if (pm != null) {
             pm.addPacketListener(new PlayerPacketWrap.InfoPacketAdapter());
-            pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
+            //pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
         } else {
             logger.info("Register packet adapter failed.");
         }
@@ -152,11 +148,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         logger.info("Disabled " + descrp.getName() + " v" + descrp.getVersion() + ".");
     }
 
-    public void setPlayerRawNameVisibility(@NotNull Player player, boolean visibility) {
+    synchronized public void setPlayerRawNameVisibility(@NotNull Player player, boolean visibility) {
         config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE, visibility);
     }
 
-    public boolean setPlayerName(@NotNull Player player, @NotNull String name) {
+    synchronized public boolean setPlayerName(@NotNull Player player, @NotNull String name) {
         if (!name.contains("§") && name.getBytes(StandardCharsets.UTF_8).length <= 16) {
             config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_NAME, name);
             return true;
@@ -165,11 +161,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void addPlayerSkin(@NotNull Player player, @NotNull String skin) {
+    synchronized public void addPlayerSkin(@NotNull Player player, @NotNull String skin) {
         config.addStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST, skin);
     }
 
-    public boolean setPlayerSkin(@NotNull Player player, @NotNull String skin) {
+    synchronized public boolean setPlayerSkin(@NotNull Player player, @NotNull String skin) {
         var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
         if (skinLst.contains(skin)) {
             config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN, skin);
@@ -179,11 +175,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void addPlayerTag(@NotNull Player player, @NotNull String tag) {
+    synchronized public void addPlayerTag(@NotNull Player player, @NotNull String tag) {
         config.addStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST, tag);
     }
 
-    public boolean setPlayerTag(@NotNull Player player, @NotNull String tag) {
+    synchronized public boolean setPlayerTag(@NotNull Player player, @NotNull String tag) {
         var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
         if (tagLst.contains(tag)) {
             config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG, tag);
@@ -193,15 +189,15 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void setPlayerTagVisibility(@NotNull Player player, boolean visibility) {
+    synchronized public void setPlayerTagVisibility(@NotNull Player player, boolean visibility) {
         config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE, visibility);
     }
 
-    public void addPlayerStyle(@NotNull Player player, @NotNull String style) {
+    synchronized public void addPlayerStyle(@NotNull Player player, @NotNull String style) {
         config.addStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST, style);
     }
 
-    public boolean setPlayerStyle(@NotNull Player player, @NotNull String style) {
+    synchronized public boolean setPlayerStyle(@NotNull Player player, @NotNull String style) {
         var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
         if (styleLst.contains(style)) {
             config.set(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE, style);
@@ -214,23 +210,23 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
 
     @NotNull
-    public String getPlayerStringRawNameVisibility(@NotNull Player player) {
+    synchronized public String getPlayerStringRawNameVisibility(@NotNull Player player) {
         var rawNameVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
         if (rawNameVisible) return "VISIBLE";
         else return "INVISIBLE";
     }
 
-    public boolean getPlayerRawNameVisibility(@NotNull Player player) {
+    synchronized public boolean getPlayerRawNameVisibility(@NotNull Player player) {
         return config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_RAW_NAME_VISIBLE);
     }
 
     @NotNull
-    public String getPlayerStringName(@NotNull Player player) {
+    synchronized public String getPlayerStringName(@NotNull Player player) {
         return config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_NAME, player.getName());
     }
 
     @NotNull
-    public String getPlayerStringSkin(@NotNull Player player) {
+    synchronized public String getPlayerStringSkin(@NotNull Player player) {
         var skin = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN, "(NONE)");
         var ret = "";
         try {
@@ -243,7 +239,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public List<String> getPlayerListSkin(@NotNull Player player) {
+    synchronized public List<String> getPlayerListSkin(@NotNull Player player) {
         var lst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
         var ret = new LinkedList<String>();
         for (var skin : lst) {
@@ -258,7 +254,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerStringTag(@NotNull Player player) {
+    synchronized public String getPlayerStringTag(@NotNull Player player) {
         var tag = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG, "(NONE)");
         var ret = "";
         try {
@@ -271,14 +267,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerStringTagVisibility(@NotNull Player player) {
+    synchronized public String getPlayerStringTagVisibility(@NotNull Player player) {
         var tagVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE);
         if (tagVisible) return "VISIBLE";
         else return "INVISIBLE";
     }
 
     @NotNull
-    public List<String> getPlayerListTag(@NotNull Player player) {
+    synchronized public List<String> getPlayerListTag(@NotNull Player player) {
         var lst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
         var ret = new LinkedList<String>();
         for (var tag : lst) {
@@ -293,7 +289,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerStringStyle(@NotNull Player player) {
+    synchronized public String getPlayerStringStyle(@NotNull Player player) {
         var style = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE, "(NONE)");
         var ret = "";
         try {
@@ -306,7 +302,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public List<String> getPlayerListStyle(@NotNull Player player) {
+    synchronized public List<String> getPlayerListStyle(@NotNull Player player) {
         var lst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
         var ret = new LinkedList<String>();
         for (var style : lst) {
@@ -321,7 +317,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerDisplayName(@NotNull Player player) {
+    synchronized public String getPlayerDisplayName(@NotNull Player player) {
         var name = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_NAME, player.getName());
         var style = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE, "Normal");
         var styleLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_STYLE_LIST);
@@ -341,7 +337,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerDisplayTag(@NotNull Player player) {
+    synchronized public String getPlayerDisplayTag(@NotNull Player player) {
         var tag = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG, "NullTag");
         var tagVisible = config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE);
         var tagLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_LIST);
@@ -362,7 +358,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public WrappedSignedProperty getPlayerDisplaySkinProperty(@NotNull Player player) {
+    synchronized public WrappedSignedProperty getPlayerDisplaySkinProperty(@NotNull Player player) {
         var skin = config.getString(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN, "Default");
         var skinLst = config.getStringList(KEY_PLAYERS + player.getName() + KEY_PLAYERS_SKIN_LIST);
         Skin theSkin;
@@ -381,7 +377,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @NotNull
-    public String getPlayerDisplayFullName(@NotNull Player player) {
+    synchronized public String getPlayerDisplayFullName(@NotNull Player player) {
         String name = this.getPlayerDisplayName(player);
         String tag = this.getPlayerDisplayTag(player);
         if (tag.equals("")) {
@@ -391,7 +387,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void initPlayerDisplay(@NotNull Player player) {
+    synchronized public void initPlayerDisplay(@NotNull Player player) {
         this.addPlayerSkin(player, "Default");
         this.addPlayerTag(player, "NullTag");
         this.addPlayerStyle(player, "Normal");
@@ -406,7 +402,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
     }
 
-    public void updatePlayerDisplay(@NotNull Player player) {
+    synchronized public void updatePlayerDisplay(@NotNull Player player) {
         if (this.isFunctionEnabled()) {
             player.setCustomName(getPlayerDisplayName(player));
             player.setDisplayName(getPlayerDisplayFullName(player));
@@ -429,110 +425,121 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         SkinLoad.loadOwnSkin(player);
     }
 
+    private Map<Player, PlayerFollower> followers = new HashMap<>();
+
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        PlayerPacketWrap.setEIDPlayer(player);
-        PlayerPacketWrap.setPlayerCanView(player);
-        PlayerPacketWrap.setPlayerCanBeViewed(player);
+        followers.put(player, new PlayerFollower(player));
+//        PlayerPacketWrap.setEIDPlayer(player);
+//        PlayerPacketWrap.setPlayerCanView(player);
+//        PlayerPacketWrap.setPlayerCanBeViewed(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
-        PlayerPacketWrap.removeEIDPlayer(player);
+        followers.get(player).end();
+        followers.remove(player);
+//        PlayerPacketWrap.removeEIDPlayer(player);
     }
-
-    @EventHandler
-    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
-        var player = event.getPlayer();
-        var to = event.getTo();
-        var from = event.getFrom();
-        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
-            PlayerPacketWrap.updatePlayerFollowerMove(player);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
-        var player = event.getPlayer();
-        PlayerPacketWrap.updatePlayerFollowerMove(player);
-    }
-
-    @EventHandler
-    public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
-        var players = new HashSet<Player>();
-        var visited = new HashSet<Entity>();
-        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
-        while (!passengers.isEmpty()) {
-            var passenger = passengers.remove(0);
-            if (!visited.contains(passenger)) {
-                visited.add(passenger);
-                if (passenger instanceof Player) {
-                    players.add((Player) passenger);
-                }
-            }
-            passengers.addAll(passenger.getPassengers());
-        }
-        for (var player : players) {
-            PlayerPacketWrap.updatePlayerFollowerMove(player);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerMount(@NotNull EntityMountEvent event) {
-        var players = new HashSet<Player>();
-        var visited = new HashSet<Entity>();
-        var passengers = new LinkedList<>(List.of(event.getEntity()));
-        while (!passengers.isEmpty()) {
-            var passenger = passengers.remove(0);
-            if (!visited.contains(passenger)) {
-                visited.add(passenger);
-                if (passenger instanceof Player) {
-                    players.add((Player) passenger);
-                }
-            }
-            passengers.addAll(passenger.getPassengers());
-        }
-        for (var player : players) {
-            PlayerPacketWrap.updatePlayerFollowerMove(player);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerDismount(@NotNull EntityDismountEvent event) {
-        var players = new HashSet<Player>();
-        var visited = new HashSet<Entity>();
-        var passengers = new LinkedList<>(List.of(event.getEntity()));
-        while (!passengers.isEmpty()) {
-            var passenger = passengers.remove(0);
-            if (!visited.contains(passenger)) {
-                visited.add(passenger);
-                if (passenger instanceof Player) {
-                    players.add((Player) passenger);
-                }
-            }
-            passengers.addAll(passenger.getPassengers());
-        }
-        for (var player : players) {
-            PlayerPacketWrap.updatePlayerFollowerMove(player);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
-        var player = event.getPlayer();
-        var toMode = event.getNewGameMode();
-        if (!toMode.equals(GameMode.SPECTATOR)) {
-            PlayerPacketWrap.setPlayerCanView(player);
-            PlayerPacketWrap.setPlayerCanBeViewed(player);
-        } else {
-            PlayerPacketWrap.removePlayerCanView(player);
-            PlayerPacketWrap.removePlayerCanBeViewed(player);
-        }
-    }
+//
+//    @EventHandler
+//    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
+//        var player = event.getPlayer();
+//        var to = event.getTo();
+//        var from = event.getFrom();
+//        logger.info(player.getName() + " MOVE @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
+//        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
+//            logger.info(player.getName() + " MOVE POS @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
+//            PlayerPacketWrap.updatePlayerFollowerMove(player);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
+//        var player = event.getPlayer();
+//        logger.info(player.getName() + " TELEPORT @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
+//        PlayerPacketWrap.updatePlayerFollowerMove(player);
+//    }
+//
+//    @EventHandler
+//    public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
+//        var players = new HashSet<Player>();
+//        var visited = new HashSet<Entity>();
+//        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
+//        while (!passengers.isEmpty()) {
+//            var passenger = passengers.remove(0);
+//            if (!visited.contains(passenger)) {
+//                visited.add(passenger);
+//                if (passenger instanceof Player) {
+//                    logger.info(passenger.getName() + " VEHICLE MOVE @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
+//                    players.add((Player) passenger);
+//                }
+//            }
+//            passengers.addAll(passenger.getPassengers());
+//        }
+//        for (var player : players) {
+//            PlayerPacketWrap.updatePlayerFollowerMove(player);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onPlayerMount(@NotNull EntityMountEvent event) {
+//        var players = new HashSet<Player>();
+//        var visited = new HashSet<Entity>();
+//        var passengers = new LinkedList<>(List.of(event.getEntity()));
+//        while (!passengers.isEmpty()) {
+//            var passenger = passengers.remove(0);
+//            if (!visited.contains(passenger)) {
+//                visited.add(passenger);
+//                if (passenger instanceof Player) {
+//                    logger.info(passenger.getName() + " MOUNT @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
+//                    players.add((Player) passenger);
+//                }
+//            }
+//            passengers.addAll(passenger.getPassengers());
+//        }
+//        for (var player : players) {
+//            PlayerPacketWrap.updatePlayerFollowerMove(player);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onPlayerDismount(@NotNull EntityDismountEvent event) {
+//        var players = new HashSet<Player>();
+//        var visited = new HashSet<Entity>();
+//        var passengers = new LinkedList<>(List.of(event.getEntity()));
+//        while (!passengers.isEmpty()) {
+//            var passenger = passengers.remove(0);
+//            if (!visited.contains(passenger)) {
+//                visited.add(passenger);
+//                if (passenger instanceof Player) {
+//                    logger.info(passenger.getName() + " DISMOUNT @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
+//                    players.add((Player) passenger);
+//                }
+//            }
+//            passengers.addAll(passenger.getPassengers());
+//        }
+//        for (var player : players) {
+//            PlayerPacketWrap.updatePlayerFollowerMove(player);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
+//        var player = event.getPlayer();
+//        var toMode = event.getNewGameMode();
+//        if (!toMode.equals(GameMode.SPECTATOR)) {
+//            PlayerPacketWrap.setPlayerCanView(player);
+//            PlayerPacketWrap.setPlayerCanBeViewed(player);
+//        } else {
+//            PlayerPacketWrap.removePlayerCanView(player);
+//            PlayerPacketWrap.removePlayerCanBeViewed(player);
+//        }
+//    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
