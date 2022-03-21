@@ -8,16 +8,17 @@ import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
 import net.tarcadia.tribina.erod.stylename.util.wrap.PlayerPacketWrap;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -420,19 +421,78 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @EventHandler
-    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+    public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
-        this.updatePlayerDisplay(player);
         SkinLoad.loadOwnSkin(player);
-        PlayerPacketWrap.loadEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
+        var player = event.getPlayer();
+        this.updatePlayerDisplay(player);
+        PlayerPacketWrap.setEIDPlayer(player);
+        PlayerPacketWrap.setPlayerCanView(player);
+        PlayerPacketWrap.setPlayerCanBeViewed(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
         SkinLoad.unloadOwnSkin(player);
-        PlayerPacketWrap.unloadEIDPlayer(player);
+        Entity vehicle = player.getVehicle();
+        while (vehicle != null) {
+            PlayerPacketWrap.removeVehiclePassenger(vehicle, player);
+            vehicle = vehicle.getVehicle();
+        }
+        PlayerPacketWrap.removeEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
+        var player = event.getPlayer();
+        var to = event.getTo();
+        var from = event.getFrom();
+        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
+        var player = event.getPlayer();
+        PlayerPacketWrap.updatePlayerFollowerMove(player);
+    }
+
+    @EventHandler
+    public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
+        var players = new HashSet<Player>();
+        var visited = new HashSet<Entity>();
+        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
+        while (!passengers.isEmpty()) {
+            var passenger = passengers.remove(0);
+            if (!visited.contains(passenger) && passenger instanceof Player) {
+                players.add((Player) passenger);
+                visited.add(passenger);
+            }
+            passengers.addAll(passenger.getPassengers());
+        }
+        for (var player : players) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
+        var player = event.getPlayer();
+        var toMode = event.getNewGameMode();
+        if (!toMode.equals(GameMode.SPECTATOR)) {
+            PlayerPacketWrap.setPlayerCanView(player);
+            PlayerPacketWrap.setPlayerCanBeViewed(player);
+        } else {
+            PlayerPacketWrap.removePlayerCanView(player);
+            PlayerPacketWrap.removePlayerCanBeViewed(player);
+        }
     }
 
     @Override

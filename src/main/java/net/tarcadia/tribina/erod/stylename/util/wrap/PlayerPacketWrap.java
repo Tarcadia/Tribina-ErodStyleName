@@ -2,15 +2,14 @@ package net.tarcadia.tribina.erod.stylename.util.wrap;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.StyleName;
-import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
+import net.tarcadia.tribina.erod.stylename.util.type.Pair;
+import org.bukkit.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,9 +18,15 @@ import java.util.*;
 public class PlayerPacketWrap {
 
     private static final Map<Integer, Player> eidPlayer = new HashMap<>();
-    private static final Map<Integer, Player> eidFollower = new HashMap<>();
+    private static final Map<Integer, Entity> eidVehicle = new HashMap<>();
+    private static final Map<UUID, Set<Player>> passengersVehicle = new HashMap<>();
     private static final Map<String, Integer> followerEID = new HashMap<>();
     private static final Map<String, UUID> followerUUID = new HashMap<>();
+
+    private static final Set<Pair<Player, Player>> followerViewed = new HashSet<>();
+    private static final Set<Pair<Player, Player>> playerInView = new HashSet<>();
+    private static final Set<Player> playerCanView = new HashSet<>();
+    private static final Set<Player> playerCanBeViewed = new HashSet<>();
 
     private PlayerPacketWrap() {}
 
@@ -29,7 +34,6 @@ public class PlayerPacketWrap {
         if (!followerEID.containsKey(player.getName()) || followerEID.get(player.getName()) == null) {
             var eid = new Random().nextInt(Integer.MAX_VALUE);
             followerEID.put(player.getName(), eid);
-            eidFollower.put(eid, player);
             return eid;
         } else {
             return followerEID.get(player.getName());
@@ -47,49 +51,227 @@ public class PlayerPacketWrap {
         }
     }
 
-    @Nullable
-    public static Player getEIDFollower(int eid) {
-        if (eidFollower.containsKey(eid) && eidFollower.get(eid) != null) {
-            return eidFollower.get(eid);
-        } else {
-            return null;
-        }
-    }
-
-    public static void loadEIDPlayer(@NotNull Player player) {
+    public static void setEIDPlayer(@NotNull Player player) {
         eidPlayer.put(player.getEntityId(), player);
     }
 
-    public static void unloadEIDPlayer(@NotNull Player player) {
+    public static void removeEIDPlayer(@NotNull Player player) {
+        for (var target : player.getWorld().getPlayers()) {
+            removePlayerInView(target, player);
+        }
         eidPlayer.remove(player.getEntityId());
+    }
+
+    public static void addVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
+        passengersVehicle.putIfAbsent(vehicle.getUniqueId(), new HashSet<>());
+        var set = passengersVehicle.get(vehicle.getUniqueId());
+        set.add(player);
+        eidVehicle.put(vehicle.getEntityId(), vehicle);
+    }
+
+    public static void removeVehiclePassenger(@NotNull Entity vehicle, @NotNull Player player) {
+        var set = passengersVehicle.get(vehicle.getUniqueId());
+        if (set != null) {
+            set.remove(player);
+            if (set.isEmpty()) {
+                passengersVehicle.remove(vehicle.getUniqueId());
+                eidVehicle.remove(vehicle.getEntityId());
+            }
+        }
+    }
+
+    public static void removeVehicle(@NotNull Entity vehicle) {
+        passengersVehicle.remove(vehicle.getUniqueId());
+        eidVehicle.remove(vehicle.getEntityId());
     }
 
     @Nullable
     public static Player getEIDPlayer(int eid) {
-        if (eidPlayer.containsKey(eid) && eidPlayer.get(eid) != null) {
-            var player = eidPlayer.get(eid);
-            if (player.getEntityId() == eid) {
-                return player;
-            } else {
-                return null;
-            }
+        Player player;
+        if (eidPlayer.containsKey(eid) && (player = eidPlayer.get(eid)) != null) {
+            return player;
         } else {
             return null;
         }
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
+    public static Collection<Player> getEIDPlayers(int eid) {
+        Set<Player> players = new HashSet<>();
+        Entity entity;
+        if (eidPlayer.containsKey(eid) && (entity = eidPlayer.get(eid)) != null) {
+            players.add((Player) entity);
+        } else if (eidVehicle.containsKey(eid) && (entity = eidVehicle.get(eid)) != null) {
+            var passengers = passengersVehicle.get(entity.getUniqueId());
+            if (passengers != null) players.addAll(passengers);
+        }
+        return players;
+    }
+
+    private static void setPlayerInView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        playerInView.add(view);
+        if (playerCanView.contains(viewer) && playerCanBeViewed.contains(player) && !followerViewed.contains(view)) showPlayerFollower(viewer, player);
+    }
+
+    private static void removePlayerInView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        playerInView.remove(view);
+        if (followerViewed.contains(view)) hidePlayerFollower(viewer, player);
+    }
+
+    public static boolean getPlayerInView(@NotNull Player viewer, @NotNull Player player) {
+        var view = new Pair<>(viewer, player);
+        return playerInView.contains(view);
+    }
+
+    public static boolean getPlayerInView(@NotNull Pair<Player, Player> view) {
+        return playerInView.contains(view);
+    }
+
+    public static void setPlayerCanView(@NotNull Player viewer) {
+        playerCanView.add(viewer);
+        for (var view : playerInView) if (view.x().equals(viewer)) {
+            Player player;
+            if (!followerViewed.contains(view) && (player = view.y()) != null && playerCanBeViewed.contains(player)) {
+                showPlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static void removePlayerCanView(@NotNull Player viewer) {
+        playerCanView.remove(viewer);
+        for (var view : playerInView) if (view.x().equals(viewer)) {
+            Player player;
+            if (followerViewed.contains(view) && (player = view.y()) != null) {
+                hidePlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static boolean getPlayerCanView(@NotNull Player viewer) {
+        return playerCanView.contains(viewer);
+    }
+
+    public static void setPlayerCanBeViewed(@NotNull Player player) {
+        playerCanBeViewed.add(player);
+        for (var view : playerInView) if (view.y().equals(player)) {
+            Player viewer;
+            if (!followerViewed.contains(view) && (viewer = view.x()) != null && playerCanView.contains(viewer)) {
+                showPlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static void removePlayerCanBeViewed(@NotNull Player player) {
+        playerCanBeViewed.remove(player);
+        for (var view : playerInView) if (view.y().equals(player)) {
+            Player viewer;
+            if (followerViewed.contains(view) && (viewer = view.x()) != null) {
+                hidePlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static boolean getPlayerCanBeViewed(@NotNull Player viewer) {
+        return playerCanBeViewed.contains(viewer);
+    }
+
+    public static void updatePlayerFollowerMove(@NotNull Player player) {
+        Player viewer;
+        for (var view : followerViewed) {
+            if (view.y().equals(player) && (viewer = view.x()) != null) {
+                movePlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    public static void updatePlayerFollowerMeta(@NotNull Player player) {
+        Player viewer;
+        for (var view : followerViewed) {
+            if (view.y().equals(player) && (viewer = view.x()) != null) {
+                metaPlayerFollower(viewer, player);
+            }
+        }
+    }
+
+    private static void showPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (getPlayerInView(view) && getPlayerCanView(viewer) && getPlayerCanBeViewed(player) && !followerViewed.contains(view)) {
+            try {
+                var packetSpawn = wrapFollowerSpawn(player);
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(viewer, packetSpawn);
+                pm.sendServerPacket(viewer, packetMeta);
+                followerViewed.add(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to show player " + player.getName() + "'s follower for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    private static void hidePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (followerViewed.contains(view)) {
+            try {
+                var packetDestroy = wrapFollowerDestroy(player);
+                pm.sendServerPacket(viewer, packetDestroy);
+                followerViewed.remove(view);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to hide player " + player.getName() + "'s follower for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    private static void metaPlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (followerViewed.contains(view)) {
+            try {
+                var packetMeta = wrapFollowerMeta(player);
+                pm.sendServerPacket(viewer, packetMeta);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to send player " + player.getName() + "'s follower's metadata for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    private static void movePlayerFollower(@NotNull Player viewer, @NotNull Player player) {
+        var pm = ProtocolLibrary.getProtocolManager();
+        var view = new Pair<>(viewer, player);
+        if (followerViewed.contains(view)) {
+            try {
+                var packetMove = wrapFollowerMove(player);
+                pm.sendServerPacket(viewer, packetMove);
+            } catch (Exception e) {
+                StyleName.logger.warning("Unable to send player " + player.getName() + "'s follower's move for " + viewer.getName() + ".");
+            }
+        }
+    }
+
+    private static double getFollowerNameTagOffset(@NotNull Player player) {
+        var sn = StyleName.plugin;
+        double offset = player.getHeight();
+        var vehicle = player.getVehicle();
+        if (vehicle instanceof Strider) offset = player.getHeight() + 1.16;
+        else if (vehicle instanceof Horse) offset = player.getHeight() + 0.85;
+        else if (vehicle instanceof Llama) offset = player.getHeight() + 0.772;
+        else if (vehicle instanceof Pig) offset = player.getHeight() + 0.325;
+        else if (vehicle instanceof Boat) offset = player.getHeight() - 0.45;
+        if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
+        return offset;
+    }
+
+    @NotNull
+    private static PacketContainer wrapFollowerSpawn(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
         var packetSpawn = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-        double offset = 2.1;
-        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
-        if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
-        else if (player.isSleeping()) offset -= 1.6;
+        var offset = getFollowerNameTagOffset(player);
 
         packetSpawn.getModifier().writeDefaults();
         packetSpawn.getIntegers().write(0, eid);
@@ -103,7 +285,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerMeta(@NotNull Player player) {
+    private static PacketContainer wrapFollowerMeta(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var metadata = new WrappedDataWatcher();
@@ -128,7 +310,7 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerDestroy(@NotNull Player player) {
+    private static PacketContainer wrapFollowerDestroy(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
@@ -142,16 +324,12 @@ public class PlayerPacketWrap {
     }
 
     @NotNull
-    public static PacketContainer wrapFollowerMove(@NotNull Player player) {
+    private static PacketContainer wrapFollowerMove(@NotNull Player player) {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var eid = getFollowerEID(player);
         var uuid = getFollowerUUID(player);
-        double offset = 2.1;
-        if (!sn.getPlayerRawNameVisibility(player)) offset -= 0.3;
-        if (player.isSneaking()) offset -= 0.4;
-        else if (player.isGliding() || player.isSwimming()) offset -= 1.2;
-        else if (player.isSleeping()) offset -= 1.6;
+        var offset = getFollowerNameTagOffset(player);
 
         var packetMove = pm.createPacket(PacketType.Play.Server.ENTITY_TELEPORT);
         packetMove.getModifier().writeDefaults();
@@ -181,9 +359,9 @@ public class PlayerPacketWrap {
             PacketContainer packet;
             if (
                     this.sn.isFunctionEnabled() &&
-                            ((packet = event.getPacket()) != null) &&
-                            (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
-                            (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
+                    ((packet = event.getPacket()) != null) &&
+                    (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
+                    (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
             ) {
                 var nPIDList = new LinkedList<PlayerInfoData>();
                 for (var rPID : packet.getPlayerInfoDataLists().read(0)) {
@@ -191,9 +369,9 @@ public class PlayerPacketWrap {
                     WrappedGameProfile profile;
                     if (
                             (rPID != null) &&
-                                    ((profile = rPID.getProfile()) != null) &&
-                                    ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
-                                    player.isOnline()
+                            ((profile = rPID.getProfile()) != null) &&
+                            ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
+                            player.isOnline()
                     ) {
                         var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
                         var nWGP = profile.withName(name);
@@ -210,7 +388,6 @@ public class PlayerPacketWrap {
     public static final class MovePacketAdapter extends PacketAdapter {
 
         private final StyleName sn;
-        private final ProtocolManager pm;
 
         public MovePacketAdapter() {
             super(
@@ -218,13 +395,9 @@ public class PlayerPacketWrap {
                     ListenerPriority.NORMAL,
                     PacketType.Play.Server.NAMED_ENTITY_SPAWN,
                     PacketType.Play.Server.ENTITY_DESTROY,
-                    PacketType.Play.Server.ENTITY_METADATA,
-                    PacketType.Play.Server.REL_ENTITY_MOVE,
-                    PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
-                    PacketType.Play.Server.ENTITY_TELEPORT
+                    PacketType.Play.Server.ENTITY_METADATA
             );
             sn = StyleName.plugin;
-            pm = ProtocolLibrary.getProtocolManager();
         }
 
         @Override
@@ -235,60 +408,28 @@ public class PlayerPacketWrap {
                     var eid = packet.getIntegers().read(0);
                     var uuid = packet.getUUIDs().read(0);
                     var player = sn.getServer().getPlayer(uuid);
-                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
-                        var packetSpawn = PlayerPacketWrap.wrapFollowerSpawn(player);
-                        var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
-                        try {
-                            var target = event.getPlayer();
-                            pm.sendServerPacket(target, packetSpawn);
-                            pm.sendServerPacket(target, packetMeta);
-                        } catch (Exception e) {
-                            StyleName.logger.warning("Unable to wrap the player follower spawn packet.");
-                        }
+                    var target = event.getPlayer();
+                    if (player != null) {
+                        setPlayerInView(target, player);
+                        showPlayerFollower(target, player); // is it redundant?
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_DESTROY)) {
                     var eidList = packet.getIntLists().read(0);
                     for (var eid : eidList) {
-                        var player = PlayerPacketWrap.getEIDPlayer(eid);
-                        if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
-                            var packetDestroyPlayer = PlayerPacketWrap.wrapFollowerDestroy(player);
-                            var packetDestroyTarget = (player.getGameMode().equals(GameMode.SPECTATOR)) ? PlayerPacketWrap.wrapFollowerDestroy(event.getPlayer()) : null;
-                            try {
-                                var target = event.getPlayer();
-                                pm.sendServerPacket(target, packetDestroyPlayer);
-                                if (packetDestroyTarget != null) pm.sendServerPacket(player, packetDestroyTarget);
-                            } catch (Exception e) {
-                                StyleName.logger.warning("Unable to wrap the player follower destroy packet.");
-                            }
+                        var player = getEIDPlayer(eid);
+                        var target = event.getPlayer();
+                        if (player != null) {
+                            removePlayerInView(target, player);
+                            hidePlayerFollower(target, player); // is it redundant?
                         }
                     }
                 } else if (packet.getType().equals(PacketType.Play.Server.ENTITY_METADATA)) {
                     var eid = packet.getIntegers().read(0);
-                    var player = PlayerPacketWrap.getEIDPlayer(eid);
-                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
-                        var packetMeta = PlayerPacketWrap.wrapFollowerMeta(player);
-                        try {
-                            var target = event.getPlayer();
-                            pm.sendServerPacket(target, packetMeta);
-                        } catch (Exception e) {
-                            StyleName.logger.warning("Unable to wrap the player follower meta packet.");
-                        }
-                    }
-                } else if (
-                        packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE) ||
-                                packet.getType().equals(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) ||
-                                packet.getType().equals(PacketType.Play.Server.ENTITY_TELEPORT)
-                ) {
-                    var eid = packet.getIntegers().read(0);
-                    var player = PlayerPacketWrap.getEIDPlayer(eid);
-                    if (player != null && !event.getPlayer().getGameMode().equals(GameMode.SPECTATOR)) {
-                        var packetMove = PlayerPacketWrap.wrapFollowerMove(player);
-                        try {
-                            var target = event.getPlayer();
-                            pm.sendServerPacket(target, packetMove);
-                        } catch (Exception e) {
-                            StyleName.logger.warning("Unable to wrap the player follower move packet.");
-                        }
+                    var player = getEIDPlayer(eid);
+                    var target = event.getPlayer();
+                    if (player != null) {
+                        metaPlayerFollower(target, player);
+                        movePlayerFollower(target, player);
                     }
                 }
             }
