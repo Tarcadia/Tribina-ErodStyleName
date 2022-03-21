@@ -466,9 +466,19 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     @EventHandler
     public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
-        var passengers = event.getVehicle().getPassengers();
-        for (var passenger : passengers) if (passenger instanceof Player) {
-            PlayerPacketWrap.updatePlayerFollowerMove((Player) passenger);
+        var players = new HashSet<Player>();
+        var visited = new HashSet<Entity>();
+        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
+        while (!passengers.isEmpty()) {
+            var passenger = passengers.remove(0);
+            if (!visited.contains(passenger) && passenger instanceof Player) {
+                players.add((Player) passenger);
+                visited.add(passenger);
+            }
+            passengers.addAll(passenger.getPassengers());
+        }
+        for (var player : players) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
         }
     }
 
