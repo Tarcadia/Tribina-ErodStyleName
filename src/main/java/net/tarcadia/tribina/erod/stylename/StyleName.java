@@ -473,9 +473,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var passengers = new LinkedList<>(event.getVehicle().getPassengers());
         while (!passengers.isEmpty()) {
             var passenger = passengers.remove(0);
-            if (!visited.contains(passenger) && passenger instanceof Player) {
-                players.add((Player) passenger);
+            if (!visited.contains(passenger)) {
                 visited.add(passenger);
+                if (passenger instanceof Player) {
+                    players.add((Player) passenger);
+                }
             }
             passengers.addAll(passenger.getPassengers());
         }
@@ -491,9 +493,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var passengers = new LinkedList<>(List.of(event.getEntity()));
         while (!passengers.isEmpty()) {
             var passenger = passengers.remove(0);
-            if (!visited.contains(passenger) && passenger instanceof Player) {
-                players.add((Player) passenger);
+            if (!visited.contains(passenger)) {
                 visited.add(passenger);
+                if (passenger instanceof Player) {
+                    players.add((Player) passenger);
+                }
             }
             passengers.addAll(passenger.getPassengers());
         }
@@ -509,9 +513,11 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var passengers = new LinkedList<>(List.of(event.getEntity()));
         while (!passengers.isEmpty()) {
             var passenger = passengers.remove(0);
-            if (!visited.contains(passenger) && passenger instanceof Player) {
-                players.add((Player) passenger);
+            if (!visited.contains(passenger)) {
                 visited.add(passenger);
+                if (passenger instanceof Player) {
+                    players.add((Player) passenger);
+                }
             }
             passengers.addAll(passenger.getPassengers());
         }
