@@ -436,15 +436,15 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 //        PlayerPacketWrap.setPlayerCanView(player);
 //        PlayerPacketWrap.setPlayerCanBeViewed(player);
     }
-
-    @EventHandler
-    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
-        var player = event.getPlayer();
-        SkinLoad.unloadOwnSkin(player);
-        followers.get(player).end();
-        followers.remove(player);
-//        PlayerPacketWrap.removeEIDPlayer(player);
-    }
+//
+//    @EventHandler
+//    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+//        var player = event.getPlayer();
+//        SkinLoad.unloadOwnSkin(player);
+//        followers.get(player).end();
+//        followers.remove(player);
+////        PlayerPacketWrap.removeEIDPlayer(player);
+//    }
 //
 //    @EventHandler
 //    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
