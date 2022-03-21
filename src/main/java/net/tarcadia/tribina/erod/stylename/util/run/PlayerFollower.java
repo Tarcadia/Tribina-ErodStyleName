@@ -339,19 +339,25 @@ public class PlayerFollower extends BukkitRunnable {
 
     @Override
     public void run() {
-        var nowGM = this.player.getGameMode();
-        if (this.lastGM == null) this.follower.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
-        else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR)) this.follower.canViewFollower(true);
-        else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR)) this.follower.canViewFollower(false);
-        var nowLoc = this.player.getLocation().clone();
-        var nowSneaking = this.player.isSneaking();
-        boolean ifMove = (this.lastLoc == null || this.lastLoc.getX() != nowLoc.getX() || this.lastLoc.getY() != nowLoc.getY() || this.lastLoc.getZ() != nowLoc.getZ());
-        boolean ifMeta = (this.lastSneaking != nowSneaking);
-        if (ifMove && ifMeta) this.follower.viewMoveMetaUpdateFollowerAll();
-        else if (ifMove) this.follower.viewMoveUpdateFollowerAll();
-        else if (ifMeta) this.follower.viewMetaUpdateFollowerAll();
-        this.lastLoc = nowLoc;
-        this.lastGM = nowGM;
-        this.lastSneaking = nowSneaking;
+        if (this.player.isOnline()) {
+            var nowGM = this.player.getGameMode();
+            if (this.lastGM == null) this.follower.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
+            else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR))
+                this.follower.canViewFollower(true);
+            else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR))
+                this.follower.canViewFollower(false);
+            var nowLoc = this.player.getLocation().clone();
+            var nowSneaking = this.player.isSneaking();
+            boolean ifMove = (this.lastLoc == null || this.lastLoc.getX() != nowLoc.getX() || this.lastLoc.getY() != nowLoc.getY() || this.lastLoc.getZ() != nowLoc.getZ());
+            boolean ifMeta = (this.lastSneaking != nowSneaking);
+            if (ifMove && ifMeta) this.follower.viewMoveMetaUpdateFollowerAll();
+            else if (ifMove) this.follower.viewMoveUpdateFollowerAll();
+            else if (ifMeta) this.follower.viewMetaUpdateFollowerAll();
+            this.lastLoc = nowLoc;
+            this.lastGM = nowGM;
+            this.lastSneaking = nowSneaking;
+        } else {
+            this.end();
+        }
     }
 }
