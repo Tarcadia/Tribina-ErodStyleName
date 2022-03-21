@@ -254,7 +254,6 @@ public class PlayerPacketWrap {
     private static double getFollowerNameTagOffset(@NotNull Player player) {
         var sn = StyleName.plugin;
         double offset = player.getHeight();
-        if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         var vehicle = player.getVehicle();
         if (vehicle instanceof Strider) offset = player.getHeight() + 1.16;
         else if (vehicle instanceof Horse) offset = player.getHeight() + 0.85;
@@ -262,6 +261,7 @@ public class PlayerPacketWrap {
         else if (vehicle instanceof Pig) offset = player.getHeight() + 0.325;
         else if (vehicle instanceof Minecart) offset = player.getHeight() - 0.35;
         else if (vehicle instanceof Boat) offset = player.getHeight() - 0.45;
+        if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         return offset;
     }
 
