@@ -339,5 +339,8 @@ public class PlayerFollower extends BukkitRunnable {
         if (ifMove && ifMeta) this.follower.viewMoveMetaUpdateFollowerAll();
         else if (ifMove) this.follower.viewMoveUpdateFollowerAll();
         else if (ifMeta) this.follower.viewMetaUpdateFollowerAll();
+        this.lastLoc = nowLoc;
+        this.lastGM = nowGM;
+        this.lastSneaking = nowSneaking;
     }
 }
