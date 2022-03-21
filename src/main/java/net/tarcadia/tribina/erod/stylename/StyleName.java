@@ -453,6 +453,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var to = event.getTo();
         var from = event.getFrom();
         if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
+            logger.info(player.getCustomName() + " MOVE.");
             PlayerPacketWrap.updatePlayerFollowerMove(player);
         }
     }
@@ -460,7 +461,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     @EventHandler
     public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
         var player = event.getPlayer();
+        logger.info(player.getCustomName() + " TELEPORT.");
         PlayerPacketWrap.updatePlayerFollowerMove(player);
+        Entity vehicle = player.getVehicle();
+        while (vehicle != null) {
+            PlayerPacketWrap.removeVehiclePassenger(vehicle, player);
+            vehicle = vehicle.getVehicle();
+        }
+        PlayerPacketWrap.removeEIDPlayer(player);
     }
 
     @EventHandler
