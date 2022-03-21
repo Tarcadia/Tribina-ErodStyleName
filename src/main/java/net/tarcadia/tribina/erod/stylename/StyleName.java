@@ -22,6 +22,8 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.spigotmc.event.entity.EntityDismountEvent;
+import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -469,6 +471,42 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         var players = new HashSet<Player>();
         var visited = new HashSet<Entity>();
         var passengers = new LinkedList<>(event.getVehicle().getPassengers());
+        while (!passengers.isEmpty()) {
+            var passenger = passengers.remove(0);
+            if (!visited.contains(passenger) && passenger instanceof Player) {
+                players.add((Player) passenger);
+                visited.add(passenger);
+            }
+            passengers.addAll(passenger.getPassengers());
+        }
+        for (var player : players) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMount(@NotNull EntityMountEvent event) {
+        var players = new HashSet<Player>();
+        var visited = new HashSet<Entity>();
+        var passengers = new LinkedList<>(List.of(event.getEntity()));
+        while (!passengers.isEmpty()) {
+            var passenger = passengers.remove(0);
+            if (!visited.contains(passenger) && passenger instanceof Player) {
+                players.add((Player) passenger);
+                visited.add(passenger);
+            }
+            passengers.addAll(passenger.getPassengers());
+        }
+        for (var player : players) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDismount(@NotNull EntityDismountEvent event) {
+        var players = new HashSet<Player>();
+        var visited = new HashSet<Entity>();
+        var passengers = new LinkedList<>(List.of(event.getEntity()));
         while (!passengers.isEmpty()) {
             var passenger = passengers.remove(0);
             if (!visited.contains(passenger) && passenger instanceof Player) {
