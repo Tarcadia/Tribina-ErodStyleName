@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -469,6 +470,24 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             vehicle = vehicle.getVehicle();
         }
         PlayerPacketWrap.removeEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
+        var players = new HashSet<Player>();
+        var visited = new HashSet<Entity>();
+        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
+        while (!passengers.isEmpty()) {
+            var passenger = passengers.remove(0);
+            if (!visited.contains(passenger) && passenger instanceof Player) {
+                players.add((Player) passenger);
+                visited.add(passenger);
+            }
+            passengers.addAll(passenger.getPassengers());
+        }
+        for (var player : players) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
     }
 
     @EventHandler
