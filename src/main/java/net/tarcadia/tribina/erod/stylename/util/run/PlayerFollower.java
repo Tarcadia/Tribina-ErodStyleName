@@ -77,6 +77,10 @@ class PlayerFollowerViewer extends PacketAdapter {
         ProtocolLibrary.getProtocolManager().addPacketListener(this);
     }
 
+    public void end() {
+        ProtocolLibrary.getProtocolManager().removePacketListener(this);
+    }
+
     synchronized public void canViewFollower(boolean canViewFollower) {
         this.canViewFollower = canViewFollower;
         for (var viewer : playerViewedBy) this.viewInOutUpdateFollower(viewer);
@@ -325,6 +329,12 @@ public class PlayerFollower extends BukkitRunnable {
         super();
         this.player = player;
         this.follower = PlayerFollowerViewer.getPlayerFollowerViewer(player);
+        this.runTaskTimerAsynchronously(StyleName.plugin, 0, 4);
+    }
+
+    public void end() {
+        this.follower.end();
+        this.cancel();
     }
 
     @Override
