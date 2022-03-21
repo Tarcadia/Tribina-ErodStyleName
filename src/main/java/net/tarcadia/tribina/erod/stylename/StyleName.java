@@ -13,13 +13,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -432,24 +430,50 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        PlayerPacketWrap.loadEIDPlayer(player);
+        PlayerPacketWrap.setEIDPlayer(player);
+        PlayerPacketWrap.setPlayerCanView(player);
+        PlayerPacketWrap.setPlayerCanBeViewed(player);
     }
 
     @EventHandler
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
         var player = event.getPlayer();
-        PlayerPacketWrap.hideOneFollower(player);
         SkinLoad.unloadOwnSkin(player);
-        PlayerPacketWrap.unloadEIDPlayer(player);
+        Entity vehicle = player.getVehicle();
+        while (vehicle != null) {
+            PlayerPacketWrap.removeVehiclePassenger(vehicle, player);
+            vehicle = vehicle.getVehicle();
+        }
+        PlayerPacketWrap.removeEIDPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
+        var player = event.getPlayer();
+        var to = event.getTo();
+        var from = event.getFrom();
+        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
+            PlayerPacketWrap.updatePlayerFollowerMove(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
+        var player = event.getPlayer();
+        PlayerPacketWrap.updatePlayerFollowerMove(player);
     }
 
     @EventHandler
     public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
         var player = event.getPlayer();
-        var fromMode = player.getGameMode();
         var toMode = event.getNewGameMode();
-        if (fromMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.showAllFollower(player);
-        if (toMode.equals(GameMode.SPECTATOR)) PlayerPacketWrap.hideAllFollower(player);
+        if (!toMode.equals(GameMode.SPECTATOR)) {
+            PlayerPacketWrap.setPlayerCanView(player);
+            PlayerPacketWrap.setPlayerCanBeViewed(player);
+        } else {
+            PlayerPacketWrap.removePlayerCanView(player);
+            PlayerPacketWrap.removePlayerCanBeViewed(player);
+        }
     }
 
     @Override
