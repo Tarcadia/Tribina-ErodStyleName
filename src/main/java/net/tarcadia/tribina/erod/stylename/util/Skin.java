@@ -23,12 +23,12 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinValue(@NotNull Player player) {
-            return Objects.requireNonNullElse(SkinLoad.getTextureValue(player), Alex.skinValue(player));
+            return Objects.requireNonNullElse(SkinLoader.getTextureValue(player), Alex.skinValue(player));
         }
 
         @Override
         synchronized public @NotNull String skinSignature(@NotNull Player player) {
-            return Objects.requireNonNullElse(SkinLoad.getTextureSignature(player), Alex.skinValue(player));
+            return Objects.requireNonNullElse(SkinLoader.getTextureSignature(player), Alex.skinValue(player));
         }
     },
 

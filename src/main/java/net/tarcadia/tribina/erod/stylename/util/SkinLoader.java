@@ -1,5 +1,13 @@
 package net.tarcadia.tribina.erod.stylename.util;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.tarcadia.tribina.erod.stylename.StyleName;
@@ -11,9 +19,10 @@ import javax.net.ssl.HttpsURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
-public class SkinLoad {
+public class SkinLoader {
 
     public static final String URL_API_NAME_TO_UUID = "https://api.mojang.com/users/profiles/minecraft/";
     public static final String URL_API_UUID_TO_PROFILE = "https://sessionserver.mojang.com/session/minecraft/profile/";
@@ -84,6 +93,50 @@ public class SkinLoad {
             return tx.get("signature").getAsString();
         } else {
             return null;
+        }
+    }
+
+    public static final class InfoPacketAdapter extends PacketAdapter {
+
+        private final StyleName sn;
+
+        public InfoPacketAdapter() {
+            super(
+                    StyleName.plugin,
+                    ListenerPriority.NORMAL,
+                    PacketType.Play.Server.PLAYER_INFO
+            );
+            sn = StyleName.plugin;
+        }
+
+        @Override
+        public void onPacketSending(PacketEvent event) {
+            PacketContainer packet;
+            if (
+                    this.sn.isFunctionEnabled() &&
+                            ((packet = event.getPacket()) != null) &&
+                            (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
+                            (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
+            ) {
+                var nPIDList = new LinkedList<PlayerInfoData>();
+                for (var rPID : packet.getPlayerInfoDataLists().read(0)) {
+                    Player player;
+                    WrappedGameProfile profile;
+                    if (
+                            (rPID != null) &&
+                            ((profile = rPID.getProfile()) != null) &&
+                            ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
+                            player.isOnline()
+                    ) {
+                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
+                        var nWGP = profile.withName(name);
+                        nWGP.getProperties().removeAll("textures");
+                        nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
+                        nPIDList.add(new PlayerInfoData(nWGP, rPID.getLatency(), rPID.getGameMode(), rPID.getDisplayName()));
+                    }
+                }
+                packet.getPlayerInfoDataLists().write(0, nPIDList);
+            }
         }
     }
 
