@@ -331,7 +331,7 @@ public class PlayerFollower extends BukkitRunnable {
         super();
         this.player = player;
         this.follower = PlayerFollowerViewer.getPlayerFollowerViewer(player);
-        this.runTaskTimer(StyleName.plugin, 0, 1);
+        this.runTaskTimerAsynchronously(StyleName.plugin, 0, 1);
     }
 
     public void end() {
