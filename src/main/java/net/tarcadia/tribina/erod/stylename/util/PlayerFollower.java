@@ -1,4 +1,4 @@
-package net.tarcadia.tribina.erod.stylename.util.run;
+package net.tarcadia.tribina.erod.stylename.util;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;

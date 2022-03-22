@@ -7,7 +7,7 @@ import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
-import net.tarcadia.tribina.erod.stylename.util.run.PlayerFollower;
+import net.tarcadia.tribina.erod.stylename.util.PlayerFollower;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
