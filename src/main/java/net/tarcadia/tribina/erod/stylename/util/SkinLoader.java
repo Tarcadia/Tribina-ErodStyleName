@@ -128,7 +128,7 @@ public class SkinLoader {
                             ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
                             player.isOnline()
                     ) {
-                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
+                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "~";
                         var nWGP = profile.withName(name);
                         nWGP.getProperties().removeAll("textures");
                         nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));
