@@ -8,7 +8,6 @@ import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
 import net.tarcadia.tribina.erod.stylename.util.run.PlayerFollower;
-import net.tarcadia.tribina.erod.stylename.util.wrap.PlayerPacketWrap;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -133,7 +132,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             logger.severe("Register command failed.");
         }
         if (pm != null) {
-            pm.addPacketListener(new PlayerPacketWrap.InfoPacketAdapter());
+            pm.addPacketListener(new SkinLoad.InfoPacketAdapter());
             //pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
         } else {
             logger.info("Register packet adapter failed.");
