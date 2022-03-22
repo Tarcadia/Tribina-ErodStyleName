@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class SkinLoad {
+public class SkinLoader {
 
     public static final String URL_API_NAME_TO_UUID = "https://api.mojang.com/users/profiles/minecraft/";
     public static final String URL_API_UUID_TO_PROFILE = "https://sessionserver.mojang.com/session/minecraft/profile/";

@@ -3,7 +3,7 @@ package net.tarcadia.tribina.erod.stylename;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.util.Skin;
-import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
+import net.tarcadia.tribina.erod.stylename.util.SkinLoader;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
@@ -132,7 +132,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             logger.severe("Register command failed.");
         }
         if (pm != null) {
-            pm.addPacketListener(new SkinLoad.InfoPacketAdapter());
+            pm.addPacketListener(new SkinLoader.InfoPacketAdapter());
             //pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
         } else {
             logger.info("Register packet adapter failed.");
@@ -421,7 +421,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
-        SkinLoad.loadOwnSkin(player);
+        SkinLoader.loadOwnSkin(player);
     }
 
     @EventHandler
