@@ -1,4 +1,4 @@
-package net.tarcadia.tribina.erod.stylename.util.run;
+package net.tarcadia.tribina.erod.stylename.util;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -53,10 +53,12 @@ class PlayerFollowerViewer extends PacketAdapter {
         }
     }
 
+    @NotNull
     synchronized public static Collection<Player> getPlayers() {
         return new LinkedList<>(pvm.keySet());
     }
 
+    @NotNull
     synchronized public static Collection<PlayerFollowerViewer> getFollowerViewers() {
         return new LinkedList<>(pvm.values());
     }
@@ -329,7 +331,7 @@ public class PlayerFollower extends BukkitRunnable {
         super();
         this.player = player;
         this.follower = PlayerFollowerViewer.getPlayerFollowerViewer(player);
-        this.runTaskTimerAsynchronously(StyleName.plugin, 0, 1);
+        this.runTaskTimer(StyleName.plugin, 0, 1);
     }
 
     public void end() {

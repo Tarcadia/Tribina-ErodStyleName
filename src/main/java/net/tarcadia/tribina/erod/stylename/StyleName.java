@@ -3,12 +3,11 @@ package net.tarcadia.tribina.erod.stylename;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.*;
 import net.tarcadia.tribina.erod.stylename.util.Skin;
-import net.tarcadia.tribina.erod.stylename.util.SkinLoad;
+import net.tarcadia.tribina.erod.stylename.util.SkinLoader;
 import net.tarcadia.tribina.erod.stylename.util.Style;
 import net.tarcadia.tribina.erod.stylename.util.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
-import net.tarcadia.tribina.erod.stylename.util.run.PlayerFollower;
-import net.tarcadia.tribina.erod.stylename.util.wrap.PlayerPacketWrap;
+import net.tarcadia.tribina.erod.stylename.util.PlayerFollower;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -133,7 +132,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
             logger.severe("Register command failed.");
         }
         if (pm != null) {
-            pm.addPacketListener(new PlayerPacketWrap.InfoPacketAdapter());
+            pm.addPacketListener(new SkinLoader.InfoPacketAdapter());
             //pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
         } else {
             logger.info("Register packet adapter failed.");
@@ -422,124 +421,15 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
-        SkinLoad.loadOwnSkin(player);
+        SkinLoader.loadOwnSkin(player);
     }
-
-    private Map<Player, PlayerFollower> followers = new HashMap<>();
 
     @EventHandler
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        followers.put(player, new PlayerFollower(player));
-//        PlayerPacketWrap.setEIDPlayer(player);
-//        PlayerPacketWrap.setPlayerCanView(player);
-//        PlayerPacketWrap.setPlayerCanBeViewed(player);
+        new PlayerFollower(player);
     }
-//
-//    @EventHandler
-//    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
-//        var player = event.getPlayer();
-//        SkinLoad.unloadOwnSkin(player);
-//        followers.get(player).end();
-//        followers.remove(player);
-////        PlayerPacketWrap.removeEIDPlayer(player);
-//    }
-//
-//    @EventHandler
-//    public void onPlayerMove(@NotNull PlayerMoveEvent event) {
-//        var player = event.getPlayer();
-//        var to = event.getTo();
-//        var from = event.getFrom();
-//        logger.info(player.getName() + " MOVE @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
-//        if (to != null && (to.getX() != from.getX() || to.getY() != from.getY() || to.getZ() != from.getZ())) {
-//            logger.info(player.getName() + " MOVE POS @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
-//            PlayerPacketWrap.updatePlayerFollowerMove(player);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerTeleport(@NotNull PlayerTeleportEvent event) {
-//        var player = event.getPlayer();
-//        logger.info(player.getName() + " TELEPORT @(" + player.getLocation().getX() + ", " + player.getLocation().getZ() + ")");
-//        PlayerPacketWrap.updatePlayerFollowerMove(player);
-//    }
-//
-//    @EventHandler
-//    public void onPlayerVehicleMove(@NotNull VehicleMoveEvent event) {
-//        var players = new HashSet<Player>();
-//        var visited = new HashSet<Entity>();
-//        var passengers = new LinkedList<>(event.getVehicle().getPassengers());
-//        while (!passengers.isEmpty()) {
-//            var passenger = passengers.remove(0);
-//            if (!visited.contains(passenger)) {
-//                visited.add(passenger);
-//                if (passenger instanceof Player) {
-//                    logger.info(passenger.getName() + " VEHICLE MOVE @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
-//                    players.add((Player) passenger);
-//                }
-//            }
-//            passengers.addAll(passenger.getPassengers());
-//        }
-//        for (var player : players) {
-//            PlayerPacketWrap.updatePlayerFollowerMove(player);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerMount(@NotNull EntityMountEvent event) {
-//        var players = new HashSet<Player>();
-//        var visited = new HashSet<Entity>();
-//        var passengers = new LinkedList<>(List.of(event.getEntity()));
-//        while (!passengers.isEmpty()) {
-//            var passenger = passengers.remove(0);
-//            if (!visited.contains(passenger)) {
-//                visited.add(passenger);
-//                if (passenger instanceof Player) {
-//                    logger.info(passenger.getName() + " MOUNT @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
-//                    players.add((Player) passenger);
-//                }
-//            }
-//            passengers.addAll(passenger.getPassengers());
-//        }
-//        for (var player : players) {
-//            PlayerPacketWrap.updatePlayerFollowerMove(player);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerDismount(@NotNull EntityDismountEvent event) {
-//        var players = new HashSet<Player>();
-//        var visited = new HashSet<Entity>();
-//        var passengers = new LinkedList<>(List.of(event.getEntity()));
-//        while (!passengers.isEmpty()) {
-//            var passenger = passengers.remove(0);
-//            if (!visited.contains(passenger)) {
-//                visited.add(passenger);
-//                if (passenger instanceof Player) {
-//                    logger.info(passenger.getName() + " DISMOUNT @(" + passenger.getLocation().getX() + ", " + passenger.getLocation().getZ() + ")");
-//                    players.add((Player) passenger);
-//                }
-//            }
-//            passengers.addAll(passenger.getPassengers());
-//        }
-//        for (var player : players) {
-//            PlayerPacketWrap.updatePlayerFollowerMove(player);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerGameModeChange(@NotNull PlayerGameModeChangeEvent event) {
-//        var player = event.getPlayer();
-//        var toMode = event.getNewGameMode();
-//        if (!toMode.equals(GameMode.SPECTATOR)) {
-//            PlayerPacketWrap.setPlayerCanView(player);
-//            PlayerPacketWrap.setPlayerCanBeViewed(player);
-//        } else {
-//            PlayerPacketWrap.removePlayerCanView(player);
-//            PlayerPacketWrap.removePlayerCanBeViewed(player);
-//        }
-//    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
