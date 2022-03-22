@@ -213,11 +213,11 @@ class PlayerFollowerViewer extends PacketAdapter {
         var sn = StyleName.plugin;
         double offset;
         var vehicle = this.player.getVehicle();
-        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16;
-        else if (vehicle instanceof Horse) offset = this.player.getHeight() + 0.85;
-        else if (vehicle instanceof Llama) offset = this.player.getHeight() + 0.772;
-        else if (vehicle instanceof Pig) offset = this.player.getHeight() + 0.325;
-        else if (vehicle instanceof Boat) offset = this.player.getHeight() - 0.45;
+        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16 + 0.3;
+        else if (vehicle instanceof Horse) offset = this.player.getHeight() + 0.85 + 0.3;
+        else if (vehicle instanceof Llama) offset = this.player.getHeight() + 0.772 + 0.3;
+        else if (vehicle instanceof Pig) offset = this.player.getHeight() + 0.325 + 0.3;
+        else if (vehicle instanceof Boat) offset = this.player.getHeight() - 0.45 + 0.3;
         else offset = this.player.getHeight();
         //if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         return offset;
