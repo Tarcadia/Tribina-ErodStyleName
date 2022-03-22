@@ -218,7 +218,7 @@ class PlayerFollowerViewer extends PacketAdapter {
         else if (vehicle instanceof Llama) offset = this.player.getHeight() + 0.772 + 0.3;
         else if (vehicle instanceof Pig) offset = this.player.getHeight() + 0.325 + 0.3;
         else if (vehicle instanceof Boat) offset = this.player.getHeight() - 0.45 + 0.3;
-        else offset = this.player.getHeight();
+        else offset = this.player.getHeight() + 0.3;
         //if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         return offset;
     }
