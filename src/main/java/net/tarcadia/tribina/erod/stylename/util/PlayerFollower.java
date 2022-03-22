@@ -331,7 +331,7 @@ public class PlayerFollower extends BukkitRunnable {
         super();
         this.player = player;
         this.follower = PlayerFollowerViewer.getPlayerFollowerViewer(player);
-        this.runTaskTimer(StyleName.plugin, 0, 1);
+        this.runTaskTimerAsynchronously(StyleName.plugin, 0, 1);
     }
 
     public void end() {
@@ -350,8 +350,17 @@ public class PlayerFollower extends BukkitRunnable {
                 this.follower.canViewFollower(false);
             var nowLoc = this.player.getLocation().clone();
             var nowSneaking = this.player.isSneaking();
-            boolean ifMove = (this.lastLoc == null || this.lastLoc.getX() != nowLoc.getX() || this.lastLoc.getY() != nowLoc.getY() || this.lastLoc.getZ() != nowLoc.getZ());
-            boolean ifMeta = (this.lastSneaking != nowSneaking);
+            boolean ifMove = (
+                    this.lastSneaking != nowSneaking ||
+                    this.lastLoc == null ||
+                    this.lastLoc.getX() != nowLoc.getX() ||
+                    this.lastLoc.getY() != nowLoc.getY() ||
+                    this.lastLoc.getZ() != nowLoc.getZ()
+            );
+            boolean ifMeta = (
+                    this.lastSneaking != nowSneaking
+            );
+
             if (ifMove && ifMeta) this.follower.viewMoveMetaUpdateFollowerAll();
             else if (ifMove) this.follower.viewMoveUpdateFollowerAll();
             else if (ifMeta) this.follower.viewMetaUpdateFollowerAll();
