@@ -10,7 +10,7 @@ depend: [ ProtocolLib ]
 commands:
   erodstylename:
     aliases: [ erodsn, stylename ]
-    description: "Manage players' tags and custom names."
+    description: "Manage and show players' raw name, custom name, skins, tags and custom name styles."
     usage: |
       ... enable
       ... disable
