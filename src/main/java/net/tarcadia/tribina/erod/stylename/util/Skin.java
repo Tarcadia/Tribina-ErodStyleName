@@ -1,13 +1,9 @@
 package net.tarcadia.tribina.erod.stylename.util;
 
-import com.google.gson.JsonObject;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public enum Skin {
 
@@ -27,32 +23,12 @@ public enum Skin {
 
         @Override
         synchronized public @NotNull String skinValue(@NotNull Player player) {
-            updateSkin(player);
-            var tx = textures.get(player.getName());
-            if (tx != null) {
-                try {
-                    return tx.get("value").getAsString();
-                } catch (Exception e) {
-                    return Alex.skinValue(player);
-                }
-            } else {
-                return Alex.skinValue(player);
-            }
+            return Objects.requireNonNullElse(SkinLoader.getTextureValue(player), Alex.skinValue(player));
         }
 
         @Override
         synchronized public @NotNull String skinSignature(@NotNull Player player) {
-            updateSkin(player);
-            var tx = textures.get(player.getName());
-            if (tx != null) {
-                try {
-                    return tx.get("signature").getAsString();
-                } catch (Exception e) {
-                    return Alex.skinValue(player);
-                }
-            } else {
-                return Alex.skinValue(player);
-            }
+            return Objects.requireNonNullElse(SkinLoader.getTextureSignature(player), Alex.skinValue(player));
         }
     },
 
@@ -93,29 +69,6 @@ public enum Skin {
     }
 
     ;
-
-    private static final Map<String, JsonObject> textures = new HashMap<>();
-    private static final Map<String, Long> lastUpdate = new HashMap<>();
-    private static final long TTL = 60000;
-
-    synchronized public static void updateSkin(@NotNull Player player) {
-        lastUpdate.putIfAbsent(player.getName(), 0L);
-        var lu = lastUpdate.get(player.getName());
-        var tx = textures.get(player.getName());
-        if (lu + TTL < System.currentTimeMillis() || tx == null) {
-            try {
-                var url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + player.getUniqueId() + "?unsigned=false");
-                var http = (HttpsURLConnection) url.openConnection();
-                http.setRequestProperty("Accept", "application/json");
-                var message = http.getResponseMessage();
-                tx = new JsonObject().getAsJsonObject(message).getAsJsonArray("properties").get(0).getAsJsonObject();
-                lastUpdate.put(player.getName(), System.currentTimeMillis());
-                textures.put(player.getName(), tx);
-            } catch (Exception e) {
-                tx = null;
-            }
-        }
-    }
 
     @NotNull
     public abstract String skinValue(@NotNull Player player);
