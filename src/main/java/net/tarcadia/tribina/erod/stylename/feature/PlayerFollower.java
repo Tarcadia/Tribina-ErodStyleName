@@ -244,7 +244,8 @@ class PlayerFollowerViewer extends PacketAdapter {
         var displayName = player.getCustomName();
         var displayNameVisible = !this.player.isSneaking() && sn.isFunctionEnabled() && displayName != null;
         if (displayName == null) {
-            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(false)), null);
+            var optDisplayNameObject = Optional.of(WrappedChatComponent.fromText("").getHandle());
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(false)), optDisplayNameObject);
         } else {
             var optDisplayNameObject = Optional.of(WrappedChatComponent.fromText(displayName).getHandle());
             metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), optDisplayNameObject);
