@@ -20,6 +20,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -596,6 +597,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @Override
+    @Nullable
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equals(CMD_SN)) {
             List<String> ret = new LinkedList<>();
