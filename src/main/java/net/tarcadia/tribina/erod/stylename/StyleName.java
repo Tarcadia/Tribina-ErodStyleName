@@ -283,7 +283,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         for (var tag : lst) {
             try {
                 var theTag = Tag.valueOf(tag);
-                ret.add(theTag.tag());
+                ret.add(tag + ": " + theTag.tag());
             } catch (IllegalArgumentException e) {
                 ret.add(tag + " (NOT SUPPORTED)");
             }
@@ -311,7 +311,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         for (var style : lst) {
             try {
                 var theStyle = Style.valueOf(style);
-                ret.add(theStyle.styled(style));
+                ret.add(style + ": " + theStyle.styled(style));
             } catch (IllegalArgumentException e) {
                 ret.add(style + " (NOT SUPPORTED)");
             }
