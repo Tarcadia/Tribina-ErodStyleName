@@ -43,7 +43,7 @@ class PlayerFollowerViewer extends PacketAdapter {
 
     static final Map<Player, PlayerFollowerViewer> pvm = new HashMap<>();
 
-    synchronized public static PlayerFollowerViewer getPlayerFollowerViewer(Player player) {
+    synchronized public static PlayerFollowerViewer getPlayerFollowerViewer(@NotNull Player player) {
         if (!pvm.containsKey(player)) {
             var pv = new PlayerFollowerViewer(player);
             pvm.put(player, pv);
