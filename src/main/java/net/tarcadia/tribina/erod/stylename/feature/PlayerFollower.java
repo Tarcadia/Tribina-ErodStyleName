@@ -1,4 +1,4 @@
-package net.tarcadia.tribina.erod.stylename.util;
+package net.tarcadia.tribina.erod.stylename.feature;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -43,7 +43,7 @@ class PlayerFollowerViewer extends PacketAdapter {
 
     static final Map<Player, PlayerFollowerViewer> pvm = new HashMap<>();
 
-    synchronized public static PlayerFollowerViewer getPlayerFollowerViewer(Player player) {
+    synchronized public static PlayerFollowerViewer getPlayerFollowerViewer(@NotNull Player player) {
         if (!pvm.containsKey(player)) {
             var pv = new PlayerFollowerViewer(player);
             pvm.put(player, pv);
@@ -51,11 +51,6 @@ class PlayerFollowerViewer extends PacketAdapter {
         } else {
             return pvm.get(player);
         }
-    }
-
-    @NotNull
-    synchronized public static Collection<Player> getPlayers() {
-        return new LinkedList<>(pvm.keySet());
     }
 
     @NotNull
@@ -79,7 +74,7 @@ class PlayerFollowerViewer extends PacketAdapter {
         ProtocolLibrary.getProtocolManager().addPacketListener(this);
     }
 
-    synchronized public void end() {
+    synchronized public void endViewer() {
         var playerViewedByList = new LinkedList<>(playerViewedBy);
         for (var viewer : playerViewedByList) this.viewOut(viewer);
         ProtocolLibrary.getProtocolManager().removePacketListener(this);
@@ -210,7 +205,6 @@ class PlayerFollowerViewer extends PacketAdapter {
     }
 
     private double getFollowerNameTagOffset() {
-        var sn = StyleName.plugin;
         double offset = this.player.getHeight() + 0.3;
 //        var vehicle = this.player.getVehicle();
 //        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16 + 0.3;
@@ -247,8 +241,8 @@ class PlayerFollowerViewer extends PacketAdapter {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var metadata = new WrappedDataWatcher();
-        var displayName = sn.getPlayerDisplayFullName(this.player);
-        var displayNameVisible = !this.player.isSneaking() && sn.isFunctionEnabled();
+        var displayName = Objects.requireNonNullElse(player.getCustomName(), "");
+        var displayNameVisible = !this.player.isSneaking() && sn.isFunctionEnabled() && !Objects.equals(displayName, "");
         var optDisplayNameObject = Optional.of(WrappedChatComponent.fromText(displayName).getHandle());
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (byte) 0x20); // invisible
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), optDisplayNameObject);
@@ -342,6 +336,8 @@ public class PlayerFollower extends BukkitRunnable {
     private GameMode lastGM = null;
     private double lastHeight = 0;
     private boolean lastSneaking = false;
+    private String lastCustomName = "";
+    private boolean lastEnable = false;
 
     private final Player player;
     private final PlayerFollowerViewer viewer;
@@ -356,20 +352,23 @@ public class PlayerFollower extends BukkitRunnable {
     public void cancel() {
         super.cancel();
         this.viewer.canViewFollower(false);
-        this.viewer.end();
+        this.viewer.endViewer();
     }
 
     @Override
     public void run() {
         var nowGM = this.player.getGameMode();
         if (this.lastGM == null) this.viewer.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
-        else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR))
+        else if (Objects.equals(this.lastGM, GameMode.SPECTATOR) && !Objects.equals(nowGM, GameMode.SPECTATOR))
             this.viewer.canViewFollower(true);
-        else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR))
+        else if (!Objects.equals(this.lastGM, GameMode.SPECTATOR) && Objects.equals(nowGM, GameMode.SPECTATOR))
             this.viewer.canViewFollower(false);
         var nowLoc = this.player.getLocation().clone();
         var nowHeight = this.player.getHeight();
         var nowSneaking = this.player.isSneaking();
+        var nowCustomName = this.player.getCustomName();
+        var nowEnable = StyleName.plugin.isFunctionEnabled();
+
         boolean ifMove = (
                 this.lastHeight != nowHeight ||
                 this.lastLoc == null ||
@@ -378,7 +377,9 @@ public class PlayerFollower extends BukkitRunnable {
                 this.lastLoc.getZ() != nowLoc.getZ()
         );
         boolean ifMeta = (
-                this.lastSneaking != nowSneaking
+                this.lastSneaking != nowSneaking ||
+                !Objects.equals(this.lastCustomName, nowCustomName) ||
+                this.lastEnable != nowEnable
         );
 
         if (ifMove && ifMeta) this.viewer.viewMoveMetaUpdateFollowerAll();
@@ -388,5 +389,7 @@ public class PlayerFollower extends BukkitRunnable {
         this.lastGM = nowGM;
         this.lastHeight = nowHeight;
         this.lastSneaking = nowSneaking;
+        this.lastCustomName = nowCustomName;
+        this.lastEnable = nowEnable;
     }
 }
