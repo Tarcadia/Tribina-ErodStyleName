@@ -403,12 +403,12 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
 
     synchronized public void updatePlayerDisplay(@NotNull Player player) {
         if (this.isFunctionEnabled()) {
-            player.setCustomName(getPlayerDisplayName(player));
-            player.setDisplayName(getPlayerDisplayFullName(player));
-            player.setPlayerListName(getPlayerDisplayName(player));
+            player.setDisplayName(getPlayerDisplayName(player));
+            player.setCustomName(getPlayerDisplayFullName(player));
+            player.setPlayerListName(getPlayerDisplayFullName(player));
         } else {
-            player.setCustomName(null);
             player.setDisplayName(null);
+            player.setCustomName(null);
             player.setPlayerListName(null);
         }
         for (var p : player.getServer().getOnlinePlayers()) if (p != player) {
