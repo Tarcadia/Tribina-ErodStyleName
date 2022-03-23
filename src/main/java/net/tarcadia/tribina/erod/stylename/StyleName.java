@@ -273,7 +273,7 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     synchronized public boolean getPlayerTagVisibility(@NotNull Player player) {
-        return config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE)
+        return config.getBoolean(KEY_PLAYERS + player.getName() + KEY_PLAYERS_TAG_VISIBLE);
     }
 
     @NotNull
