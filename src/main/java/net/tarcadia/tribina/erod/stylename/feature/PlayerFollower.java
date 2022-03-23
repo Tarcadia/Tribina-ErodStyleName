@@ -363,9 +363,9 @@ public class PlayerFollower extends BukkitRunnable {
     public void run() {
         var nowGM = this.player.getGameMode();
         if (this.lastGM == null) this.viewer.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
-        else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR))
+        else if (Objects.equals(this.lastGM, GameMode.SPECTATOR) && !Objects.equals(nowGM, GameMode.SPECTATOR))
             this.viewer.canViewFollower(true);
-        else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR))
+        else if (!Objects.equals(this.lastGM, GameMode.SPECTATOR) && Objects.equals(nowGM, GameMode.SPECTATOR))
             this.viewer.canViewFollower(false);
         var nowLoc = this.player.getLocation().clone();
         var nowHeight = this.player.getHeight();
@@ -382,7 +382,7 @@ public class PlayerFollower extends BukkitRunnable {
         );
         boolean ifMeta = (
                 this.lastSneaking != nowSneaking ||
-                !this.lastCustomName.equals(nowCustomName) ||
+                !Objects.equals(this.lastCustomName, nowCustomName) ||
                 this.lastEnable != nowEnable
         );
 
