@@ -114,9 +114,9 @@ public class SkinLoader {
             PacketContainer packet;
             if (
                     this.sn.isFunctionEnabled() &&
-                            ((packet = event.getPacket()) != null) &&
-                            (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
-                            (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
+                    ((packet = event.getPacket()) != null) &&
+                    (packet.getType().equals(PacketType.Play.Server.PLAYER_INFO)) &&
+                    (packet.getPlayerInfoAction().read(0).equals(EnumWrappers.PlayerInfoAction.ADD_PLAYER))
             ) {
                 var nPIDList = new LinkedList<PlayerInfoData>();
                 for (var rPID : packet.getPlayerInfoDataLists().read(0)) {
@@ -128,7 +128,7 @@ public class SkinLoader {
                             ((player = this.sn.getServer().getPlayer(profile.getUUID())) != null) &&
                             player.isOnline()
                     ) {
-                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "";
+                        var name = this.sn.getPlayerRawNameVisibility(player) ? player.getName() : "~";
                         var nWGP = profile.withName(name);
                         nWGP.getProperties().removeAll("textures");
                         nWGP.getProperties().put("textures", sn.getPlayerDisplaySkinProperty(player));

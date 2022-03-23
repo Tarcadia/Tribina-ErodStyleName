@@ -428,7 +428,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         var player = event.getPlayer();
         this.updatePlayerDisplay(player);
-        new PlayerFollower(player);
+        PlayerFollower.regPlayerFollower(player);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
+        var player = event.getPlayer();
+        PlayerFollower.cancelPlayerFollower(player);
+        SkinLoader.unloadOwnSkin(player);
     }
 
     @Override

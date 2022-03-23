@@ -79,7 +79,9 @@ class PlayerFollowerViewer extends PacketAdapter {
         ProtocolLibrary.getProtocolManager().addPacketListener(this);
     }
 
-    public void end() {
+    synchronized public void end() {
+        var playerViewedByList = new LinkedList<>(playerViewedBy);
+        for (var viewer : playerViewedByList) this.viewOut(viewer);
         ProtocolLibrary.getProtocolManager().removePacketListener(this);
     }
 
@@ -209,15 +211,15 @@ class PlayerFollowerViewer extends PacketAdapter {
 
     private double getFollowerNameTagOffset() {
         var sn = StyleName.plugin;
-        double offset;
-        var vehicle = this.player.getVehicle();
-        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16;
-        else if (vehicle instanceof Horse) offset = this.player.getHeight() + 0.85;
-        else if (vehicle instanceof Llama) offset = this.player.getHeight() + 0.772;
-        else if (vehicle instanceof Pig) offset = this.player.getHeight() + 0.325;
-        else if (vehicle instanceof Boat) offset = this.player.getHeight() - 0.45;
-        else offset = this.player.getHeight();
-        if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
+        double offset = this.player.getHeight() + 0.3;
+//        var vehicle = this.player.getVehicle();
+//        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16 + 0.3;
+//        else if (vehicle instanceof Horse) offset = this.player.getHeight() + 0.85 + 0.3;
+//        else if (vehicle instanceof Llama) offset = this.player.getHeight() + 0.772 + 0.3;
+//        else if (vehicle instanceof Pig) offset = this.player.getHeight() + 0.325 + 0.3;
+//        else if (vehicle instanceof Boat) offset = this.player.getHeight() - 0.45 + 0.3;
+//        else offset = this.player.getHeight() + 0.3;
+        //if (sn.getPlayerRawNameVisibility(player)) offset += 0.3;
         return offset;
     }
 
@@ -320,55 +322,71 @@ class PlayerFollowerViewer extends PacketAdapter {
 
 public class PlayerFollower extends BukkitRunnable {
 
+    private static final Map<Player, PlayerFollower> followerViewers = new HashMap<>();
+
+    synchronized public static void regPlayerFollower(@NotNull Player player) {
+        PlayerFollower follower = followerViewers.get(player);
+        if (follower == null) {
+            follower = new PlayerFollower(player);
+            followerViewers.put(player, follower);
+        }
+        follower.runTaskTimerAsynchronously(StyleName.plugin, 0, 1);
+    }
+
+    synchronized public static void cancelPlayerFollower(@NotNull Player player) {
+        PlayerFollower follower = followerViewers.get(player);
+        follower.cancel();
+    }
+
     private Location lastLoc = null;
     private GameMode lastGM = null;
+    private double lastHeight = 0;
     private boolean lastSneaking = false;
 
     private final Player player;
-    private final PlayerFollowerViewer follower;
+    private final PlayerFollowerViewer viewer;
 
-    public PlayerFollower(@NotNull Player player) {
+    private PlayerFollower(@NotNull Player player) {
         super();
         this.player = player;
-        this.follower = PlayerFollowerViewer.getPlayerFollowerViewer(player);
-        this.runTaskTimerAsynchronously(StyleName.plugin, 0, 1);
+        this.viewer = PlayerFollowerViewer.getPlayerFollowerViewer(player);
     }
 
-    public void end() {
-        this.follower.end();
-        this.cancel();
+    @Override
+    public void cancel() {
+        super.cancel();
+        this.viewer.canViewFollower(false);
+        this.viewer.end();
     }
 
     @Override
     public void run() {
-        if (this.player.isOnline()) {
-            var nowGM = this.player.getGameMode();
-            if (this.lastGM == null) this.follower.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
-            else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR))
-                this.follower.canViewFollower(true);
-            else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR))
-                this.follower.canViewFollower(false);
-            var nowLoc = this.player.getLocation().clone();
-            var nowSneaking = this.player.isSneaking();
-            boolean ifMove = (
-                    this.lastSneaking != nowSneaking ||
-                    this.lastLoc == null ||
-                    this.lastLoc.getX() != nowLoc.getX() ||
-                    this.lastLoc.getY() != nowLoc.getY() ||
-                    this.lastLoc.getZ() != nowLoc.getZ()
-            );
-            boolean ifMeta = (
-                    this.lastSneaking != nowSneaking
-            );
+        var nowGM = this.player.getGameMode();
+        if (this.lastGM == null) this.viewer.canViewFollower(!nowGM.equals(GameMode.SPECTATOR));
+        else if (this.lastGM.equals(GameMode.SPECTATOR) && !nowGM.equals(GameMode.SPECTATOR))
+            this.viewer.canViewFollower(true);
+        else if (!this.lastGM.equals(GameMode.SPECTATOR) && nowGM.equals(GameMode.SPECTATOR))
+            this.viewer.canViewFollower(false);
+        var nowLoc = this.player.getLocation().clone();
+        var nowHeight = this.player.getHeight();
+        var nowSneaking = this.player.isSneaking();
+        boolean ifMove = (
+                this.lastHeight != nowHeight ||
+                this.lastLoc == null ||
+                this.lastLoc.getX() != nowLoc.getX() ||
+                this.lastLoc.getY() != nowLoc.getY() ||
+                this.lastLoc.getZ() != nowLoc.getZ()
+        );
+        boolean ifMeta = (
+                this.lastSneaking != nowSneaking
+        );
 
-            if (ifMove && ifMeta) this.follower.viewMoveMetaUpdateFollowerAll();
-            else if (ifMove) this.follower.viewMoveUpdateFollowerAll();
-            else if (ifMeta) this.follower.viewMetaUpdateFollowerAll();
-            this.lastLoc = nowLoc;
-            this.lastGM = nowGM;
-            this.lastSneaking = nowSneaking;
-        } else {
-            this.end();
-        }
+        if (ifMove && ifMeta) this.viewer.viewMoveMetaUpdateFollowerAll();
+        else if (ifMove) this.viewer.viewMoveUpdateFollowerAll();
+        else if (ifMeta) this.viewer.viewMetaUpdateFollowerAll();
+        this.lastLoc = nowLoc;
+        this.lastGM = nowGM;
+        this.lastHeight = nowHeight;
+        this.lastSneaking = nowSneaking;
     }
 }
