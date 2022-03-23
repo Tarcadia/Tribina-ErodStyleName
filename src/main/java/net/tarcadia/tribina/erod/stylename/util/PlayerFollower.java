@@ -54,11 +54,6 @@ class PlayerFollowerViewer extends PacketAdapter {
     }
 
     @NotNull
-    synchronized public static Collection<Player> getPlayers() {
-        return new LinkedList<>(pvm.keySet());
-    }
-
-    @NotNull
     synchronized public static Collection<PlayerFollowerViewer> getFollowerViewers() {
         return new LinkedList<>(pvm.values());
     }
