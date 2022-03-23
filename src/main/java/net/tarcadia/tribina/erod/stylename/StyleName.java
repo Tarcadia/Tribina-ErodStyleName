@@ -132,7 +132,6 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
         }
         if (pm != null) {
             pm.addPacketListener(new SkinLoader.InfoPacketAdapter());
-            //pm.addPacketListener(new PlayerPacketWrap.MovePacketAdapter());
         } else {
             logger.info("Register packet adapter failed.");
         }
