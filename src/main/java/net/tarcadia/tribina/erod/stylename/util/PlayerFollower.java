@@ -242,11 +242,15 @@ class PlayerFollowerViewer extends PacketAdapter {
         var sn = StyleName.plugin;
         var pm = ProtocolLibrary.getProtocolManager();
         var metadata = new WrappedDataWatcher();
-        var displayName = sn.getPlayerDisplayFullName(this.player);
-        var displayNameVisible = !this.player.isSneaking() && sn.isFunctionEnabled();
-        var optDisplayNameObject = Optional.of(WrappedChatComponent.fromText(displayName).getHandle());
+        var displayName = player.getCustomName();
+        var displayNameVisible = !this.player.isSneaking() && sn.isFunctionEnabled() && displayName != null;
+        if (displayName == null) {
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(false)), null);
+        } else {
+            var optDisplayNameObject = Optional.of(WrappedChatComponent.fromText(displayName).getHandle());
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), optDisplayNameObject);
+        }
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (byte) 0x20); // invisible
-        metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), optDisplayNameObject);
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(3, WrappedDataWatcher.Registry.get(Boolean.class)), displayNameVisible);
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(4, WrappedDataWatcher.Registry.get(Boolean.class)), true);
         metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(5, WrappedDataWatcher.Registry.get(Boolean.class)), true);
