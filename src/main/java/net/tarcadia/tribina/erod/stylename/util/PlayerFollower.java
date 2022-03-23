@@ -205,7 +205,6 @@ class PlayerFollowerViewer extends PacketAdapter {
     }
 
     private double getFollowerNameTagOffset() {
-        var sn = StyleName.plugin;
         double offset = this.player.getHeight() + 0.3;
 //        var vehicle = this.player.getVehicle();
 //        if (vehicle instanceof Strider) offset = this.player.getHeight() + 1.16 + 0.3;
