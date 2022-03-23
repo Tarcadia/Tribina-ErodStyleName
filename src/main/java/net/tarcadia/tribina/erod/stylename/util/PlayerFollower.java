@@ -340,6 +340,8 @@ public class PlayerFollower extends BukkitRunnable {
     private GameMode lastGM = null;
     private double lastHeight = 0;
     private boolean lastSneaking = false;
+    private String lastCustomName = "";
+    private boolean lastEnable = false;
 
     private final Player player;
     private final PlayerFollowerViewer viewer;
@@ -368,6 +370,9 @@ public class PlayerFollower extends BukkitRunnable {
         var nowLoc = this.player.getLocation().clone();
         var nowHeight = this.player.getHeight();
         var nowSneaking = this.player.isSneaking();
+        var nowCustomName = this.player.getCustomName();
+        var nowEnable = StyleName.plugin.isFunctionEnabled();
+
         boolean ifMove = (
                 this.lastHeight != nowHeight ||
                 this.lastLoc == null ||
@@ -376,7 +381,9 @@ public class PlayerFollower extends BukkitRunnable {
                 this.lastLoc.getZ() != nowLoc.getZ()
         );
         boolean ifMeta = (
-                this.lastSneaking != nowSneaking
+                this.lastSneaking != nowSneaking ||
+                !this.lastCustomName.equals(nowCustomName) ||
+                this.lastEnable != nowEnable
         );
 
         if (ifMove && ifMeta) this.viewer.viewMoveMetaUpdateFollowerAll();
@@ -386,5 +393,7 @@ public class PlayerFollower extends BukkitRunnable {
         this.lastGM = nowGM;
         this.lastHeight = nowHeight;
         this.lastSneaking = nowSneaking;
+        this.lastCustomName = nowCustomName;
+        this.lastEnable = nowEnable;
     }
 }
