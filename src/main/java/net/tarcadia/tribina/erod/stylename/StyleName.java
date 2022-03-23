@@ -421,10 +421,14 @@ public final class StyleName extends JavaPlugin implements TabExecutor, Listener
     }
 
     @EventHandler
+    public void onPlayerPreLogin(@NotNull AsyncPlayerPreLoginEvent event) {
+        SkinLoader.loadOwnSkin(event.getName());
+    }
+
+    @EventHandler
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
         var player = event.getPlayer();
         this.initPlayerDisplay(player);
-        SkinLoader.loadOwnSkin(player);
     }
 
     @EventHandler

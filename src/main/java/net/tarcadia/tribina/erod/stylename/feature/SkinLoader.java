@@ -29,11 +29,11 @@ public class SkinLoader {
 
     private static final Map<String, JsonObject> textureRequestJson = new HashMap<>();
 
-    synchronized public static void loadOwnSkin(@NotNull Player player) {
+    synchronized public static void loadOwnSkin(@NotNull String playerName) {
         String uuid = null;
         JsonObject tx;
         try{
-            var url = new URL(URL_API_NAME_TO_UUID + player.getName());
+            var url = new URL(URL_API_NAME_TO_UUID + playerName);
             StyleName.logger.info("Requesting: \"" + url + "\" for player UUID.");
             var https = (HttpsURLConnection) url.openConnection();
             https.setRequestMethod("GET");
@@ -45,10 +45,10 @@ public class SkinLoader {
                 //StyleName.logger.info("Response: " + message);
                 uuid = JsonParser.parseString(message).getAsJsonObject().get("id").getAsString();
             } else {
-                StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
+                StyleName.logger.warning("Unable to fetch player " + playerName + "'s UUID.");
             }
         } catch (Exception e) {
-            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s UUID.");
+            StyleName.logger.warning("Unable to fetch player " + playerName + "'s UUID.");
         }
 
         if (uuid != null) try {
@@ -63,12 +63,12 @@ public class SkinLoader {
                 var message = new String(https.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
                 //StyleName.logger.info("Response: " + message);
                 tx = JsonParser.parseString(message).getAsJsonObject().getAsJsonArray("properties").get(0).getAsJsonObject();
-                textureRequestJson.put(player.getName(), tx);
+                textureRequestJson.put(playerName, tx);
             } else {
-                StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
+                StyleName.logger.warning("Unable to fetch player " + playerName + "'s profile.");
             }
         } catch (Exception e) {
-            StyleName.logger.warning("Unable to fetch player " + player.getName() + "'s profile.");
+            StyleName.logger.warning("Unable to fetch player " + playerName + "'s profile.");
         }
     }
 
