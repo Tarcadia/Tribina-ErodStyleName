@@ -2,12 +2,12 @@ package net.tarcadia.tribina.erod.stylename;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.*;
-import net.tarcadia.tribina.erod.stylename.util.Skin;
-import net.tarcadia.tribina.erod.stylename.util.SkinLoader;
-import net.tarcadia.tribina.erod.stylename.util.Style;
-import net.tarcadia.tribina.erod.stylename.util.Tag;
+import net.tarcadia.tribina.erod.stylename.feature.Skin;
+import net.tarcadia.tribina.erod.stylename.feature.SkinLoader;
+import net.tarcadia.tribina.erod.stylename.feature.Style;
+import net.tarcadia.tribina.erod.stylename.feature.Tag;
 import net.tarcadia.tribina.erod.stylename.util.data.Configuration;
-import net.tarcadia.tribina.erod.stylename.util.PlayerFollower;
+import net.tarcadia.tribina.erod.stylename.feature.PlayerFollower;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

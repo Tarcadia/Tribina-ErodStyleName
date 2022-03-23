@@ -1,4 +1,4 @@
-package net.tarcadia.tribina.erod.stylename.util;
+package net.tarcadia.tribina.erod.stylename.feature;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
